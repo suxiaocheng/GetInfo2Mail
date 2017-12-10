@@ -1,0 +1,99 @@
+package tool;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+public class SendEmail implements Runnable {
+	String text;
+	String filename;
+
+	SendEmail(String _text, String _filename) {
+		super();
+		text = _text;
+		filename = _filename;
+	}
+
+	public void run() {
+		Properties props = new Properties();
+		// 开启debug调试
+		props.setProperty("mail.debug", "false");
+		// 发送服务器需要身份验证
+		props.setProperty("mail.smtp.auth", "true");
+		// 设置邮件服务器主机名
+		props.setProperty("mail.host", "smtp.163.com");
+		// 发送邮件协议名称
+		props.setProperty("mail.transport.protocol", "smtp");
+
+		// 设置环境信息
+		Session session = Session.getInstance(props);
+
+		// 创建邮件对象
+		Message msg = new MimeMessage(session);
+		try {
+			msg.setFrom(new InternetAddress("simulator_test@163.com"));
+
+			msg.setSubject("JavaMail test");
+
+			// create and fill the first message part
+			MimeBodyPart mbp1 = new MimeBodyPart();
+			mbp1.setText(text);
+
+			MimeBodyPart mbp2 = null;
+			if (filename != null) {
+				// create the second message part
+				mbp2 = new MimeBodyPart();
+
+				// attach the file to the message
+				try {
+					mbp2.attachFile(filename);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.out.println("File attatch excepiton is happened");
+					filename = null;
+					e.printStackTrace();
+				}
+			}
+
+			// create the Multipart and add its parts to it
+			Multipart mp = new MimeMultipart();
+			mp.addBodyPart(mbp1);
+			if (mbp2 != null) {
+				mp.addBodyPart(mbp2);
+			}
+
+			// add the Multipart to the message
+			msg.setContent(mp);
+
+			// set the Date: header
+			msg.setSentDate(new Date());
+
+			Transport transport = session.getTransport();
+			// 连接邮件服务器
+			transport.connect("simulator_test", "simulator123");
+			// 发送邮件
+			transport.sendMessage(msg, new Address[] { new InternetAddress("suxiaocheng2010@hotmail.com") });
+			// 关闭连接
+			transport.close();
+
+			System.out.println("SendMail " + text + " successfully");
+
+		} catch (MessagingException e1) {
+			// TODO Auto-generated catch block
+			System.out.println("Exception is happened");
+			e1.printStackTrace();
+		}
+		System.out.println("SendMail thread is quit");
+	}
+}
