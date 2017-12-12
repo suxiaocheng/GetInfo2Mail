@@ -1,12 +1,12 @@
 package app;
 
 import debug.Log;
-import test.TestParser;
+import test.DecodePrice;
 
 public class GetInfo2Mail {
 	public static void main(String[] args) {
 		Log loger = new Log();
 		
-		TestParser.test();
+		DecodePrice.test();
 	}
 }

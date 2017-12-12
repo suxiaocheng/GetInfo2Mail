@@ -15,3 +15,6 @@ bin/
 #ignore html file
 *.html
 
+#ignore output dir
+output/
+
