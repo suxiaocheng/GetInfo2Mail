@@ -2,6 +2,7 @@ package tool;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -40,7 +41,7 @@ public class Database {
 		}		
 	}
 	
-	boolean insertTable(String statement){
+	public boolean insertTable(String statement){
 		boolean status = true;
 		
 		try {
@@ -54,8 +55,31 @@ public class Database {
 		
 		return status;
 	}
+	
+	public String queryTable(String statement, String item){
+		boolean status = true;
+		StringBuffer sb = new StringBuffer();
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(statement);
+			while(rs.next()){
+				if(sb.length() > 0){
+					sb.append(' ');
+				}
+				sb.append(rs.getString(item));
+			}
+		    stmt.close();
+		} catch (SQLException e) {
+			Log.loge("Execute statement: " + statement + " error!");
+			e.printStackTrace();
+			return null;
+		}
+		
+		return sb.toString();
+	}
 
-	void closeDatabase() {
+	public void closeDatabase() {
 		if (conn != null) {
 			try {
 				conn.close();
