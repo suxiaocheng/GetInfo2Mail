@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 import metadata.HouseBuilding;
 import metadata.HouseProject;
 import tool.Database;
+import tool.SendEmail;
 
 public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
@@ -25,6 +26,7 @@ public class GetHouseBuildingUpdate {
 	private int iValidItem;
 	private String strBuildingName;
 	private HouseBuilding hb = new HouseBuilding();
+	public static boolean bFirstBuild = false;
 
 	public void getAllHouseBuilding() {
 		HouseProject prj = new HouseProject();
@@ -112,6 +114,7 @@ public class GetHouseBuildingUpdate {
 					case 2:
 						break;
 					case 3:
+						hb.strDate = child.text();
 						break;
 					case 4:
 						break;
@@ -131,15 +134,29 @@ public class GetHouseBuildingUpdate {
 								System.out.println("Match item: " + hb.strBuildingName);
 							}
 						} else {
-							hb.insertTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr));
+							hb.insertTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
+							
+							/* Create building database here */
+							GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
+							detail.getOnePageFromInternet(hb.strHtmlAddr, hb.strBuildingName);
+							
+							/* SendEmail to me */
+							if(bFirstBuild == false) {
+								SendEmail sendEmail = new SendEmail(hb.strBuildingName, detail.hp.decodeAllToString(), null);
+								Thread t1 = new Thread(sendEmail);
+								t1.start();
+								try {
+									t1.join();
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+							
 							iNewItemCount++;
 						}
 						iValidItem++;
-						System.out.println("name: " + hb.strBuildingName + ", addr: " + hb.strHtmlAddr);
-						
-						/* Create building database here */
-						GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
-						detail.getOnePageFromInternet(hb.strHtmlAddr, hb.strBuildingName);
+						System.out.println("name: " + hb.strBuildingName + ", addr: " + hb.strHtmlAddr);						
 						
 						break;
 					}

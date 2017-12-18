@@ -26,7 +26,7 @@ public class GetHouseBuildingDetail {
 	private int iMaxFloor = 0;
 	private int iMaxRoom = 0;
 	private ArrayList<HousePrice> arrayHousePrice = new ArrayList<>();
-	private HousePrice hp = new HousePrice();
+	public HousePrice hp = new HousePrice();
 
 	public boolean getElement(Elements parent) {
 		boolean leaf = false;

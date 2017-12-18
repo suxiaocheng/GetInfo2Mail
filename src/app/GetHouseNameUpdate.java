@@ -1,12 +1,7 @@
 package app;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.sql.ResultSet;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +11,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import debug.Log;
 import metadata.HouseProject;
 import tool.Database;
 
@@ -25,45 +19,39 @@ public class GetHouseNameUpdate implements Runnable {
 	private static final int CONNECTION_TIMEOUT = 30000;
 	private static final boolean DEBUG = false;
 	public static boolean bNeedQuit = false;
-	private String strInternetAddr = "http://data.fz0752.com/jygs/yshouselist.shtml?code=&num=&name=&comp=&address=&pageNO=";
-	Database db = new Database();
+	public static boolean bComplete = false;	
+	private final static String strProjectHead[] = { "项目名称", "开发商", "预售证",
+			"已售套数", "未售套数" };
 
-	private final static String strProjectHead[] = { "项目名称", "开发商", "预售证", "已售套数", "未售套数" };
+	private int count = 0;
+	private int updateCount = 0;
 	private int iProjectLevel;
 	private int iProjectHeaderMatch;
 	private int iValidItem;
 	private int iNewItemCount = 0;
+	private static final String strAddrBase = "http://data.fz0752.com/jygs/yshouselist.shtml?code=0&num=&name=&comp=&address=&pageNO=";
+	private String strAddr;
+	private static int iNumberThread = 0;
 
-	GetHouseNameUpdate() {
-		super();
+	private static Object lock = null;
+	
+	private static HouseProject hp;
+	
+	public static ArrayList<String> alStringNewHouse;
+
+	static {
+		lock = new Object();
+		alStringNewHouse = new ArrayList<>();
+		hp = new HouseProject();
+		hp.createTable(HouseProject.createTable());
 	}
 
-	private boolean checkForUpdateDBTable(int page) {
-		boolean result = true;
-		StringBuffer sb = new StringBuffer();
-		URL url;
-		try {
-			url = new URL(strInternetAddr + page);
-			URLConnection connection = url.openConnection();
-			connection.setConnectTimeout(CONNECTION_TIMEOUT);
-			BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.loge("MalformedURL: " + strInternetAddr + page);
-			return false;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.loge("IOException: " + strInternetAddr + page);
-			return false;
+	GetHouseNameUpdate(int page) {
+		super();
+		strAddr = strAddrBase + page;
+		synchronized (lock) {
+			iNumberThread++;
 		}
-
-		return result;
 	}
 
 	public String getElementRef(Elements parent) {
@@ -92,7 +80,8 @@ public class GetHouseNameUpdate implements Runnable {
 			}
 			if (iProjectHeaderMatch < strProjectHead.length) {
 				if (child.tag().toString().compareTo("th") == 0) {
-					if (child.text().compareTo(strProjectHead[iProjectHeaderMatch]) == 0) {
+					if (child.text().compareTo(
+							strProjectHead[iProjectHeaderMatch]) == 0) {
 						iProjectHeaderMatch++;
 					} else {
 						break;
@@ -106,13 +95,16 @@ public class GetHouseNameUpdate implements Runnable {
 					}
 					String strRefAddr = getElementRef(child.children());
 					/* Check if item is exist */
-					String strQuery = db.queryTable(HouseProject.queryNameItem(child.text()), "NAME");
+					String strQuery = hp.queryTable(
+							HouseProject.queryNameItem(child.text()), "NAME");
 					if ((strQuery != null) && (strQuery.length() > 0)) {
 						if (strQuery.compareTo(child.text()) == 0) {
 							System.out.println("Match item: " + child.text());
 						}
 					} else {
-						db.insertTable(HouseProject.insertItem(child.text(), strRefAddr));
+						hp.insertTable(HouseProject.insertItem(child.text(),
+								strRefAddr));
+						alStringNewHouse.add(child.text());
 						iNewItemCount++;
 					}
 					iValidItem++;
@@ -131,45 +123,70 @@ public class GetHouseNameUpdate implements Runnable {
 	}
 
 	public void getAllHouseName() {
-		String addr_area_base = "http://data.fz0752.com/jygs/yshouselist.shtml?code=0&num=&name=&comp=&address=&pageNO=";
 		StringBuffer sb = new StringBuffer();
 		int iRetryCount = 0;
 		boolean bFail;
 
-		db.createTable(HouseProject.createTable());
 		iNewItemCount = 0;
-		for (int i = 0;; i++) {
-			String addr_area = addr_area_base + (i + 1);
-			System.out.println("Get house name from->" + addr_area);
-			iRetryCount = 0;
-			bFail = true;
-			while (bFail) {
-				Document doc = null;
-				try {
-					doc = Jsoup.connect(addr_area).get();
-					Elements table = doc.select("table");
-					iProjectLevel = 0;
-					iValidItem = 0;
-					getElementProject(table);
+
+		String addr_area = strAddr;
+		System.out.println("Get house name from->" + addr_area);
+		iRetryCount = 0;
+		bFail = true;
+		while (bFail) {
+			Document doc = null;
+			try {
+				doc = Jsoup.connect(addr_area).get();
+				Elements table = doc.select("table");
+				iProjectLevel = 0;
+				iValidItem = 0;
+				getElementProject(table);
+				bFail = false;
+			} catch (SocketTimeoutException e) {
+				// TODO Auto-generated catch block
+				iRetryCount++;
+				if (iRetryCount > 5) {
+					e.printStackTrace();
 					bFail = false;
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					iRetryCount++;
-					if (iRetryCount > 5) {
-						e.printStackTrace();
-						bFail = false;
-						sb.append(addr_area + "\n");
-					}
+					sb.append(addr_area + "\n");
 				}
-			}
-			if (iValidItem == 0) {
-				break;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				iRetryCount++;
+				if (iRetryCount > 5) {
+					e.printStackTrace();
+					bFail = false;
+					sb.append(addr_area + "\n");
+				}
+			} 
+		}
+		if (iValidItem == 0) {
+			synchronized (lock) {
+				bComplete = true;
 			}
 		}
-		System.out.println("Adding " + iNewItemCount + " item to database\n");
+
+		System.out.println("Adding " + addr_area + "->" + iNewItemCount
+				+ " item to database\n");
 		if (sb.length() > 0) {
 			System.out.println("Error assess addr list: " + sb.toString());
 		}
+	}
+
+	public static boolean getCompleteFlag() {
+		boolean ret;
+		synchronized (lock) {
+			ret = bComplete;
+		}
+		return ret;
+	}
+
+	public static int getNumberThread() {
+		int ret;
+		synchronized (lock) {
+			ret = iNumberThread;
+		}
+		return ret;
 	}
 
 	public void run() {
@@ -178,17 +195,8 @@ public class GetHouseNameUpdate implements Runnable {
 
 		getAllHouseName();
 
-		while (true) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (bNeedQuit == true) {
-				System.out.println("User quit");
-				break;
-			}
+		synchronized (lock) {
+			iNumberThread--;
 		}
 	}
 }

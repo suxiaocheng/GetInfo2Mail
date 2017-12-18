@@ -20,14 +20,7 @@ public class HousePrice extends Database {
 	public static String TableName;
 	
 	public static void setTableName(String name){
-		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<name.length(); i++){
-			Byte b[] = new Byte[2];
-			b[0] = (byte) ((name.charAt(i) & 0xf) + '0');
-			b[1] = (byte) (((name.charAt(i)>>4) & 0xf) + '0');
-			sb.append(b[0] + b[1]);
-		}
-		TableName = "Price" + sb.toString();
+		TableName = "Price" + createTableNameStr(name);
 	}
 	
 	public static String createTable(){
@@ -89,5 +82,50 @@ public class HousePrice extends Database {
 		}
 		
 		return array;
+	}
+	
+	public String decodeAllToString(){
+		ResultSet rs = null;
+		StringBuffer result = new StringBuffer();
+		HousePrice item;
+		String statement = "SELECT * FROM " + TableName+ ";";
+		
+		result.append("name, ");
+		result.append("floor, ");
+		result.append("room, ");
+		result.append("area, ");
+		result.append("area actual, ");
+		result.append("price per, ");
+		result.append("price total\n");
+		
+		try {
+			Statement stmt = conn.createStatement();
+			rs = stmt.executeQuery(statement);
+			while(rs.next()){
+				item = new HousePrice();
+				item.name = rs.getString("name");
+				item.floor = rs.getInt("floor");
+				item.iRoomNum = rs.getInt("roomnumber");
+				item.area = rs.getFloat("area");
+				item.area_actual = rs.getFloat("areaacutal");
+				item.price_per_square_meter = rs.getFloat("priceper");
+				item.price_total = rs.getFloat("pricetotal");
+				
+				result.append(item.name + ",");
+				result.append(item.floor + ",");
+				result.append(item.iRoomNum + ",");
+				result.append(item.area + ",");
+				result.append(item.area_actual + ",");
+				result.append(item.price_per_square_meter + ",");
+				result.append(item.price_total + "\n");
+			}
+		    stmt.close();
+		} catch (SQLException e) {
+			Log.loge("Execute statement: " + statement + " error!");
+			e.printStackTrace();
+			return null;
+		}
+		
+		return result.toString();
 	}
 }

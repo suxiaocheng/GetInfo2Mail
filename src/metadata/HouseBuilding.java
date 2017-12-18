@@ -11,28 +11,25 @@ import tool.Database;
 public class HouseBuilding extends Database  {
 	public String strBuildingName;
 	public String strHtmlAddr;
+	public String strDate;
+	public String strChild;
 	public static String TableName;
 	
 	public static void setTableName(String name){
-		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<name.length(); i++){
-			Byte b[] = new Byte[2];
-			b[0] = (byte) ((name.charAt(i) & 0xf) + '0');
-			b[1] = (byte) (((name.charAt(i)>>4) & 0xf) + '0');
-			sb.append(b[0] + b[1]);
-		}
-		TableName = "House" + sb.toString();
+		TableName = "House" + createTableNameStr(name);
 	}
 	
 	public static String createTable(){
 		String ret =  "CREATE TABLE IF NOT EXISTS " + TableName +
-				" (id integer primary key AutoIncrement,name TEXT,addr TEXT);";
+				" (id integer primary key AutoIncrement,name TEXT,addr TEXT, "
+				+ "date TEXT, child TEXT);";
 		return ret;
 	}
 	
-	public static String insertItem(String name, String addr){
+	public static String insertItem(String name, String addr, String date){
 		String ret= "INSERT INTO " + TableName +
-				" (name, addr)" + " VALUES('" + name + "','" + addr +"');";
+				" (name, addr, date, child)" + " VALUES('" + name + "','" + addr +
+				"','" + date +"','" + createTableNameStr(name) +"');";
 		return ret;
 	}
 	
@@ -67,6 +64,8 @@ public class HouseBuilding extends Database  {
 				item = new HouseBuilding();
 				item.strBuildingName = rs.getString("name");
 				item.strHtmlAddr = rs.getString("addr");
+				item.strDate = rs.getString("date");
+				item.strChild = rs.getString("child");
 				
 				array.add(item);
 			}

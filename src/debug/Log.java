@@ -35,7 +35,7 @@ public class Log {
 	}
 
 	public static void logd(String msg) {
-		log(Level.INFO, msg);
+		log(Level.FINE, msg);
 	}
 	
 	public static void logw(String msg) {
@@ -43,7 +43,7 @@ public class Log {
 	}
 	
 	public static void loge(String msg) {
-		log(Level.FINEST, msg);
+		log(Level.SEVERE, msg);
 	}
 
 	public static void log(Level level, String msg) {

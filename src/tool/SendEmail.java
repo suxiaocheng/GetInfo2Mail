@@ -18,9 +18,11 @@ import javax.mail.internet.MimeMultipart;
 public class SendEmail implements Runnable {
 	String text;
 	String filename;
+	String title;
 
-	SendEmail(String _text, String _filename) {
+	public SendEmail(String _title, String _text, String _filename) {
 		super();
+		title = _title;
 		text = _text;
 		filename = _filename;
 	}
@@ -44,7 +46,7 @@ public class SendEmail implements Runnable {
 		try {
 			msg.setFrom(new InternetAddress("simulator_test@163.com"));
 
-			msg.setSubject("JavaMail test");
+			msg.setSubject(title);
 
 			// create and fill the first message part
 			MimeBodyPart mbp1 = new MimeBodyPart();

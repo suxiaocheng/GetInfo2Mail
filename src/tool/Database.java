@@ -91,4 +91,16 @@ public class Database {
 			}			
 		}
 	}
+	
+	public static String createTableNameStr(String name){
+		StringBuffer sb = new StringBuffer();
+		for(int i=0; i<name.length(); i++){
+			Byte b[] = new Byte[2];
+			b[0] = (byte) ((name.charAt(i) & 0xf) + '0');
+			b[1] = (byte) (((name.charAt(i)>>4) & 0xf) + '0');
+			sb.append(b[0] + b[1]);
+		}
+		
+		return sb.toString();
+	}
 }

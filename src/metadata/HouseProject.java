@@ -11,17 +11,19 @@ import tool.Database;
 public class HouseProject extends Database {
 	public String strProjectName;
 	public String strHtmlAddr;
+	public String strChild;
 	public static final String TableName = "HouseProject";
 	
 	public static String createTable(){
 		String ret =  "CREATE TABLE IF NOT EXISTS " + TableName +
-				" (id integer primary key AutoIncrement,name TEXT,addr TEXT);";
+				" (id integer primary key AutoIncrement,name TEXT,addr TEXT, child TEXT);";
 		return ret;
 	}
 	
 	public static String insertItem(String name, String addr){
 		String ret= "INSERT INTO " + TableName +
-				" (name, addr)" + " VALUES('" + name + "','" + addr +"');";
+				" (name, addr, child)" + " VALUES('" + name + "','" + addr + 
+				"','" + createTableNameStr(name) +"');";
 		return ret;
 	}
 	
@@ -50,6 +52,7 @@ public class HouseProject extends Database {
 				item = new HouseProject();
 				item.strProjectName = rs.getString("name");
 				item.strHtmlAddr = rs.getString("addr");
+				item.strChild = rs.getString("child");
 				
 				array.add(item);
 			}
