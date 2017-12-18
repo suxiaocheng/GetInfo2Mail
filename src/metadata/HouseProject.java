@@ -1,6 +1,14 @@
 package metadata;
 
-public class HouseProject {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import debug.Log;
+import tool.Database;
+
+public class HouseProject extends Database {
 	public String strProjectName;
 	public String strHtmlAddr;
 	public static final String TableName = "HouseProject";
@@ -21,5 +29,37 @@ public class HouseProject {
 		String ret = null;
 		ret = "SELECT name FROM " + TableName + " WHERE NAME LIKE '" + name + "';";
 		return ret;
+	}
+	
+	public static String queryAll(){
+		String ret = null;
+		ret = "SELECT * FROM " + TableName+ ";";
+		return ret;
+	}
+	
+	public ArrayList<HouseProject> decodeAllToArray(){
+		ResultSet rs = null;
+		ArrayList<HouseProject> array = new ArrayList<>();
+		HouseProject item;
+		String statement = "SELECT * FROM " + TableName+ ";";
+		
+		try {
+			Statement stmt = conn.createStatement();
+			rs = stmt.executeQuery(statement);
+			while(rs.next()){
+				item = new HouseProject();
+				item.strProjectName = rs.getString("name");
+				item.strHtmlAddr = rs.getString("addr");
+				
+				array.add(item);
+			}
+		    stmt.close();
+		} catch (SQLException e) {
+			Log.loge("Execute statement: " + statement + " error!");
+			e.printStackTrace();
+			return null;
+		}
+		
+		return array;
 	}
 }

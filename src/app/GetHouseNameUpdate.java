@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
@@ -15,7 +17,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import debug.Log;
-import metadata.HousePrice;
 import metadata.HouseProject;
 import tool.Database;
 
@@ -25,13 +26,7 @@ public class GetHouseNameUpdate implements Runnable {
 	private static final boolean DEBUG = false;
 	public static boolean bNeedQuit = false;
 	private String strInternetAddr = "http://data.fz0752.com/jygs/yshouselist.shtml?code=&num=&name=&comp=&address=&pageNO=";
-	int count = 0;
-	int updateCount = 0;
 	Database db = new Database();
-	String strDBTableName = "AllHouse";
-	String strDBCreateTable = "CREATE TABLE " + strDBTableName + "(" + "ID INT PRIMARY KEY NOT NULL AUTOINCREMENT, "
-			+ "NAME TEXT NOT NULL," + "DEVELOP TEXT NOT NULL," + "IDCARD TEXT NOT NULL," + "DATE TEXT," + "SELL INT,"
-			+ "NOTSELL INT);";
 
 	private final static String strProjectHead[] = { "项目名称", "开发商", "预售证", "已售套数", "未售套数" };
 	private int iProjectLevel;
@@ -181,31 +176,19 @@ public class GetHouseNameUpdate implements Runnable {
 		List<String> listTmp;
 		String sql;
 
-		db.createTable(strDBCreateTable);
+		getAllHouseName();
 
 		while (true) {
-			if ((count % 100) == 0) {
-				System.out.println("Thread " + strInternetAddr + " " + count);
-			}
-			count++;
 			try {
-
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} catch (IndexOutOfBoundsException e) {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
-				System.out.println("Out of bound");
-				break;
 			}
 			if (bNeedQuit == true) {
 				System.out.println("User quit");
 				break;
 			}
 		}
-		System.out.println("Execute " + strInternetAddr + " count: " + count + ", Times: " + updateCount);
 	}
 }

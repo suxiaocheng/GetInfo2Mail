@@ -9,10 +9,10 @@ import java.sql.Statement;
 import debug.Log;
 
 public class Database {
-	private String databaseName = "hz_house";
-	private Connection conn = null;	
+	private static String databaseName = "hz_house";
+	protected static Connection conn = null;	
 
-	public Database() {		
+	static {		
 		databaseName = "jdbc:sqlite:" + databaseName + ".db";
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -78,7 +78,7 @@ public class Database {
 		
 		return sb.toString();
 	}
-
+	
 	public void closeDatabase() {
 		if (conn != null) {
 			try {

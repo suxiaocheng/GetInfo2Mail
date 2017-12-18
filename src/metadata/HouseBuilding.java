@@ -8,15 +8,9 @@ import java.util.ArrayList;
 import debug.Log;
 import tool.Database;
 
-public class HousePrice extends Database {
-	public String name;
-	public int floor;
-	public int iRoomNum;
-	public float area;
-	public float area_actual;
-	public float price_per_square_meter;
-	public float price_total;
-	
+public class HouseBuilding extends Database  {
+	public String strBuildingName;
+	public String strHtmlAddr;
 	public static String TableName;
 	
 	public static void setTableName(String name){
@@ -27,24 +21,18 @@ public class HousePrice extends Database {
 			b[1] = (byte) (((name.charAt(i)>>4) & 0xf) + '0');
 			sb.append(b[0] + b[1]);
 		}
-		TableName = "Price" + sb.toString();
+		TableName = "House" + sb.toString();
 	}
 	
 	public static String createTable(){
 		String ret =  "CREATE TABLE IF NOT EXISTS " + TableName +
-				" (id integer primary key AutoIncrement,name TEXT,floor INT, "
-				+ "roomnumber int, area FLOAT, areaacutal FLOAT, priceper FLOAT, "
-				+ "pricetotal FLOAT);";
+				" (id integer primary key AutoIncrement,name TEXT,addr TEXT);";
 		return ret;
 	}
 	
-	public String insertItem(){
+	public static String insertItem(String name, String addr){
 		String ret= "INSERT INTO " + TableName +
-				" (name, floor, roomnumber, area, areaacutal, priceper, pricetotal)" + 
-				" VALUES('" + name + "'," + floor +
-				"," + iRoomNum + "," + area + "," + area_actual + ", " + 
-				price_per_square_meter + "," + price_total +
-				");";
+				" (name, addr)" + " VALUES('" + name + "','" + addr +"');";
 		return ret;
 	}
 	
@@ -52,7 +40,13 @@ public class HousePrice extends Database {
 		String ret = null;
 		ret = "SELECT name FROM " + TableName + " WHERE NAME LIKE '" + name + "';";
 		return ret;
-	}	
+	}
+	
+	public static String queryAddrItem(String addr){
+		String ret = null;
+		ret = "SELECT addr FROM " + TableName + " WHERE addr LIKE '" + addr + "';";
+		return ret;
+	}
 	
 	public static String queryAll(){
 		String ret = null;
@@ -60,24 +54,19 @@ public class HousePrice extends Database {
 		return ret;
 	}
 	
-	public ArrayList<HousePrice> decodeAllToArray(){
+	public ArrayList<HouseBuilding> decodeAllToArray(){
 		ResultSet rs = null;
-		ArrayList<HousePrice> array = new ArrayList<>();
-		HousePrice item;
+		ArrayList<HouseBuilding> array = new ArrayList<>();
+		HouseBuilding item;
 		String statement = "SELECT * FROM " + TableName+ ";";
 		
 		try {
 			Statement stmt = conn.createStatement();
 			rs = stmt.executeQuery(statement);
 			while(rs.next()){
-				item = new HousePrice();
-				item.name = rs.getString("name");
-				item.floor = rs.getInt("floor");
-				item.iRoomNum = rs.getInt("roomnumber");
-				item.area = rs.getFloat("area");
-				item.area_actual = rs.getFloat("areaacutal");
-				item.price_per_square_meter = rs.getFloat("priceper");
-				item.price_total = rs.getFloat("pricetotal");
+				item = new HouseBuilding();
+				item.strBuildingName = rs.getString("name");
+				item.strHtmlAddr = rs.getString("addr");
 				
 				array.add(item);
 			}
