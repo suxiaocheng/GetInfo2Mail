@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import config.AppConfig;
 import tool.Database;
 import debug.Log;
 
@@ -119,7 +120,6 @@ public class GetHouseNameUpdate implements Runnable {
 	}
 
 	public void getAllHouseName() {
-		StringBuffer sb = new StringBuffer();
 		int iRetryCount = 0;
 		boolean bFail;
 
@@ -140,19 +140,19 @@ public class GetHouseNameUpdate implements Runnable {
 				bFail = false;
 			} catch (SocketTimeoutException e) {
 				// TODO Auto-generated catch block
+				Log.logd("addr: " + addr_area + " timeout " + iRetryCount + ", func: " + TAG);
 				iRetryCount++;
-				if (iRetryCount > 5) {
+				if (iRetryCount > AppConfig.RETRY_TIMES) {
 					e.printStackTrace();
 					bFail = false;
-					sb.append(addr_area + "\n");
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
+				Log.logd("addr: " + addr_area + " IOException " + iRetryCount + ", func: " + TAG);
 				iRetryCount++;
-				if (iRetryCount > 5) {
+				if (iRetryCount > AppConfig.RETRY_TIMES) {
 					e.printStackTrace();
 					bFail = false;
-					sb.append(addr_area + "\n");
 				}
 			}
 		}
@@ -164,9 +164,6 @@ public class GetHouseNameUpdate implements Runnable {
 
 		Log.logd("Adding " + addr_area + "->" + iNewItemCount
 				+ " item to database\n");
-		if (sb.length() > 0) {
-			Log.logd("Error assess addr list: " + sb.toString());
-		}
 	}
 
 	public static boolean getCompleteFlag() {

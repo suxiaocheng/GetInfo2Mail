@@ -3,16 +3,16 @@ package app;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import metadata.HousePrice;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import tool.Database;
+import config.AppConfig;
 import debug.Log;
+import metadata.HousePrice;
+import tool.Database;
 
 public class GetHouseBuildingDetail {
 	private static final String TAG = "GetHouseBuildingUpdate";
@@ -72,28 +72,47 @@ public class GetHouseBuildingDetail {
 							}
 						}
 
-						switch (iItemValidCount) {
-						case 0:
-							item = new HousePrice();
-							item.name = child.text();
-							break;
-						case 1:
-							item.area = Float.parseFloat(child.text());
-							break;
-						case 2:
-							item.area_actual = Float.parseFloat(child.text());
-							break;
-						case 3:
-						case 4:
-							break;
-						case 5:
-							item.price_per_square_meter = (int) Float.parseFloat(child.text());
-							break;
-						case 6:
-							item.price_total = item.area * item.price_per_square_meter;
-							break;
-						default:
-							break;
+						try {
+							switch (iItemValidCount) {
+							case 0:
+								item = new HousePrice();
+								item.name = child.text();
+								break;
+							case 1:
+								if (child.text().compareTo("") == 0) {
+									item.area = 0;
+								} else {
+									item.area = Float.parseFloat(child.text());
+								}
+								break;
+							case 2:
+								if (child.text().compareTo("") == 0) {
+									item.area_actual = 0;
+								} else {
+									item.area_actual = Float.parseFloat(child.text());
+								}
+								break;
+							case 3:
+							case 4:
+								break;
+							case 5:
+								if (child.text().compareTo("") == 0) {
+									item.price_per_square_meter = 0;
+								} else {
+									item.price_per_square_meter = (int) Float.parseFloat(child.text());
+								}
+								break;
+							case 6:
+								item.price_total = item.area * item.price_per_square_meter;
+								break;
+							default:
+								break;
+							}
+						} catch (NumberFormatException e) {
+							Log.loge("\tiItemValidCount: " + iItemValidCount + ", text: " + child.text());
+							Log.loge("\tname: " + item.name + ", area: " + item.area + ", actual: " + item.area_actual);
+							Log.loge("\tper: " + item.price_per_square_meter + ", total: " + item.price_total);
+							throw new NumberFormatException();
 						}
 						iItemValidCount++;
 
@@ -180,11 +199,20 @@ public class GetHouseBuildingDetail {
 				return false;
 			} catch (NumberFormatException e) {
 				Log.logd("Get Number format error, retry: " + iRetryCount);
-				
+
 				Database.dropTable(HousePrice.TableName);
 				Database.execSqlTable(HousePrice.createTable());
-				
-				if (iRetryCount++ > 5) {
+
+				if (iRetryCount > 5) {
+					try {
+						Thread.sleep(iRetryCount * 100);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+
+				if (iRetryCount++ > AppConfig.RETRY_TIMES) {
 					bFail = true;
 					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
 				}

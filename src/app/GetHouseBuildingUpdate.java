@@ -3,18 +3,18 @@ package app;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import metadata.HouseBuilding;
-import metadata.HouseProject;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import config.AppConfig;
+import debug.Log;
+import metadata.HouseBuilding;
+import metadata.HouseProject;
 import tool.Database;
 import tool.SendEmail;
-import debug.Log;
 
 public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
@@ -61,7 +61,7 @@ public class GetHouseBuildingUpdate {
 					
 					// TODO Auto-generated catch block
 					iRetryCount++;
-					if (iRetryCount > 5) {
+					if (iRetryCount > AppConfig.RETRY_TIMES) {
 						e.printStackTrace();
 						bFail = false;
 						sb.append(item.strHtmlAddr + "\n");
