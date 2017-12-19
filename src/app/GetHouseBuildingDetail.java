@@ -48,7 +48,6 @@ public class GetHouseBuildingDetail {
 						if (child.text().compareTo(strTableHeader[iTableHeaderMatch]) == 0) {
 							iTableHeaderMatch++;
 							if (iTableHeaderMatch >= strTableHeader.length) {
-								System.out.println("Match");
 								break;
 							}
 						}
@@ -66,7 +65,7 @@ public class GetHouseBuildingDetail {
 									iCurrentRoomNumber = 1;
 									continue;
 								} catch (NumberFormatException e) {
-									System.out.println(child.text() + " is not number");
+									Log.loge(child.text() + " is not number");
 									break;
 								}
 							}
@@ -133,7 +132,7 @@ public class GetHouseBuildingDetail {
 			}
 		}
 		if (sb.length() != 0) {
-			System.out.println(sb.toString());
+			Log.logi(sb.toString());
 		}
 		return true;
 	}
@@ -145,7 +144,7 @@ public class GetHouseBuildingDetail {
 		boolean bFail = false;
 
 		HousePrice.setTableName(sql_table);
-		hp.createTable(HousePrice.createTable());
+		hp.execSqlTable(HousePrice.createTable());
 
 		while (bFail == false) {
 			Document doc = null;
@@ -166,10 +165,10 @@ public class GetHouseBuildingDetail {
 						String strQuery = hp.queryTable(HousePrice.queryNameItem(item.name), "name");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(item.name) == 0) {
-								System.out.println("Match item: " + item.name);
+								Log.loge("Adding detail, and found match item: " + item.name);
 							}
 						} else {
-							hp.insertTable(item.insertItem());
+							hp.execSqlTable(item.insertItem());
 							iItemValidCount++;
 						}
 					}
@@ -180,7 +179,7 @@ public class GetHouseBuildingDetail {
 				e.printStackTrace();
 				return false;
 			} catch (NumberFormatException e) {
-				System.out.println("Get Number format error");
+				Log.loge("Get Number format error, retry: " + iRetryCount);
 				if (iRetryCount++ > 5) {
 					bFail = true;
 				}

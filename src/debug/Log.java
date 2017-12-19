@@ -33,9 +33,13 @@ public class Log {
 			System.out.println("loger create fail");
 		}
 	}
+	
+	public static void logi(String msg) {
+		return;
+	}
 
 	public static void logd(String msg) {
-		log(Level.FINE, msg);
+		System.out.println(msg);
 	}
 	
 	public static void logw(String msg) {

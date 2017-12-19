@@ -19,7 +19,7 @@ public class GetInfo2Mail {
 				t1.start();
 				alThread.add(t1);
 			} else {
-				for(Thread t:alThread){
+				for (Thread t : alThread) {
 					try {
 						t.join();
 					} catch (InterruptedException e) {
@@ -39,26 +39,27 @@ public class GetInfo2Mail {
 				}
 			}
 		}
-		if(GetHouseNameUpdate.alStringNewHouse.isEmpty() == false){
+		if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
 			StringBuffer sb = new StringBuffer();
-			for(String item: GetHouseNameUpdate.alStringNewHouse){
+			for (String item : GetHouseNameUpdate.alStringNewHouse) {
 				sb.append(item + "\n");
 			}
-			SendEmail sendEmail = new SendEmail("Project new found", sb.toString(), null);
+			SendEmail sendEmail = new SendEmail("Project new found",
+					sb.toString(), null);
 			Thread t1 = new Thread(sendEmail);
 			t1.start();
 			alThread.add(t1);
 		}
-		
+
 		/* Continue to get all the building */
 		GetHouseBuildingUpdate.bFirstBuild = true;
-		
+
 		GetHouseBuildingUpdate buildUpdate = new GetHouseBuildingUpdate();
 		buildUpdate.getAllHouseBuilding();
-		
+
 		GetHouseBuildingUpdate.bFirstBuild = false;
-		
-		for(Thread t:alThread){
+
+		for (Thread t : alThread) {
 			try {
 				t.join();
 			} catch (InterruptedException e) {
@@ -67,6 +68,6 @@ public class GetInfo2Mail {
 			}
 		}
 		alThread.clear();
-		System.out.println("Program quit");
+		Log.logd("Program quit");
 	}
 }

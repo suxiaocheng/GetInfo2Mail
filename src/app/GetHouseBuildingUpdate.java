@@ -3,16 +3,17 @@ package app;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import metadata.HouseBuilding;
+import metadata.HouseProject;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import metadata.HouseBuilding;
-import metadata.HouseProject;
-import tool.Database;
 import tool.SendEmail;
+import debug.Log;
 
 public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
@@ -36,18 +37,13 @@ public class GetHouseBuildingUpdate {
 		StringBuffer sb = new StringBuffer();
 
 		for (HouseProject item : list) {
-			System.out.println("name: " + item.strProjectName + ", addr: " + item.strHtmlAddr);
+			Log.logd("name: " + item.strProjectName + ", addr: " + item.strHtmlAddr);
 			iRetryCount = 0;
 			bFail = true;
 
 			HouseBuilding.setTableName(item.strProjectName);
-			hb.createTable(HouseBuilding.createTable());
+			hb.execSqlTable(HouseBuilding.createTable());
 			
-			ArrayList<HouseBuilding> build = hb.decodeAllToArray();
-			for(HouseBuilding b:build){
-				System.out.println("->name: " + b.strBuildingName + "->" + b.strHtmlAddr);
-			}
-
 			while (bFail) {
 				Document doc = null;
 				strBuildingName = item.strProjectName;
@@ -85,7 +81,6 @@ public class GetHouseBuildingUpdate {
 	}
 
 	public boolean getElementBuilding(Elements parent) {
-		StringBuffer sb = new StringBuffer();
 		int iItemCount = 0;
 
 		if (parent == null) {
@@ -122,7 +117,7 @@ public class GetHouseBuildingUpdate {
 						hb.strHtmlAddr = getElementRef(child.children());
 						break;
 					default:
-						System.out.println("iItemCount exceed max value: " + iItemCount);
+						Log.logd("iItemCount exceed max value: " + iItemCount);
 						break;
 					}
 
@@ -131,10 +126,12 @@ public class GetHouseBuildingUpdate {
 						String strQuery = hb.queryTable(HouseBuilding.queryAddrItem(hb.strHtmlAddr), "addr");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(hb.strHtmlAddr) == 0) {
-								System.out.println("Match item: " + hb.strBuildingName);
+								Log.logi("Match item: " + hb.strBuildingName);
+							} else {
+								Log.loge("Never hit here");
 							}
 						} else {
-							hb.insertTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
+							hb.execSqlTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
 							
 							/* Create building database here */
 							GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
@@ -156,7 +153,7 @@ public class GetHouseBuildingUpdate {
 							iNewItemCount++;
 						}
 						iValidItem++;
-						System.out.println("name: " + hb.strBuildingName + ", addr: " + hb.strHtmlAddr);						
+						Log.logd("name: " + hb.strBuildingName + ", addr: " + hb.strHtmlAddr);						
 						
 						break;
 					}
@@ -166,9 +163,6 @@ public class GetHouseBuildingUpdate {
 			iBuildingLevel++;
 			getElementBuilding(child.children());
 			iBuildingLevel--;
-		}
-		if (sb.length() != 0) {
-			System.out.println(sb.toString());
 		}
 		return true;
 	}

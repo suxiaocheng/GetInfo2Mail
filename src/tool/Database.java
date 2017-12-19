@@ -29,19 +29,7 @@ public class Database {
 		Log.logd("Database: " + databaseName + " load sucessfully!");
 	}
 
-	public void createTable(String sql) {
-		try {
-			Statement stmt = conn.createStatement();
-			stmt.executeUpdate(sql);
-		    stmt.close();
-		    Log.logd("Table created successfully");
-		} catch (SQLException e) {
-			Log.loge("createTable statement[ " + sql + "] operation error!");
-			e.printStackTrace();			
-		}		
-	}
-	
-	public boolean insertTable(String statement){
+	public boolean execSqlTable(String statement){
 		boolean status = true;
 		
 		try {

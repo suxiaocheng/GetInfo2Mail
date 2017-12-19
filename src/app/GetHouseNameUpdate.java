@@ -5,14 +5,15 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
+import metadata.HouseProject;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import metadata.HouseProject;
-import tool.Database;
+import debug.Log;
 
 public class GetHouseNameUpdate implements Runnable {
 	private static final String TAG = "GetHouseNameUpdate";
@@ -43,7 +44,7 @@ public class GetHouseNameUpdate implements Runnable {
 		lock = new Object();
 		alStringNewHouse = new ArrayList<>();
 		hp = new HouseProject();
-		hp.createTable(HouseProject.createTable());
+		hp.execSqlTable(HouseProject.createTable());
 	}
 
 	GetHouseNameUpdate(int page) {
@@ -68,7 +69,6 @@ public class GetHouseNameUpdate implements Runnable {
 	}
 
 	public boolean getElementProject(Elements parent) {
-		StringBuffer sb = new StringBuffer();
 		int iItemCount = 0;
 
 		if (parent == null) {
@@ -99,10 +99,12 @@ public class GetHouseNameUpdate implements Runnable {
 							HouseProject.queryNameItem(child.text()), "NAME");
 					if ((strQuery != null) && (strQuery.length() > 0)) {
 						if (strQuery.compareTo(child.text()) == 0) {
-							System.out.println("Match item: " + child.text());
+							Log.logi("Match item: " + child.text());
+						}else {
+							Log.loge("Never hit here");
 						}
 					} else {
-						hp.insertTable(HouseProject.insertItem(child.text(),
+						hp.execSqlTable(HouseProject.insertItem(child.text(),
 								strRefAddr));
 						alStringNewHouse.add(child.text());
 						iNewItemCount++;
@@ -116,9 +118,6 @@ public class GetHouseNameUpdate implements Runnable {
 			getElementProject(child.children());
 			iProjectLevel--;
 		}
-		if (sb.length() != 0) {
-			System.out.println(sb.toString());
-		}
 		return true;
 	}
 
@@ -130,7 +129,7 @@ public class GetHouseNameUpdate implements Runnable {
 		iNewItemCount = 0;
 
 		String addr_area = strAddr;
-		System.out.println("Get house name from->" + addr_area);
+		Log.logd("Get house name from->" + addr_area);
 		iRetryCount = 0;
 		bFail = true;
 		while (bFail) {
@@ -166,10 +165,10 @@ public class GetHouseNameUpdate implements Runnable {
 			}
 		}
 
-		System.out.println("Adding " + addr_area + "->" + iNewItemCount
+		Log.logd("Adding " + addr_area + "->" + iNewItemCount
 				+ " item to database\n");
 		if (sb.length() > 0) {
-			System.out.println("Error assess addr list: " + sb.toString());
+			Log.logd("Error assess addr list: " + sb.toString());
 		}
 	}
 
