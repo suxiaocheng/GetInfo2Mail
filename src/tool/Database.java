@@ -29,7 +29,7 @@ public class Database {
 		Log.logd("Database: " + databaseName + " load sucessfully!");
 	}
 
-	public boolean execSqlTable(String statement){
+	public static boolean execSqlTable(String statement){
 		boolean status = true;
 		
 		try {
@@ -44,8 +44,7 @@ public class Database {
 		return status;
 	}
 	
-	public String queryTable(String statement, String item){
-		boolean status = true;
+	public static String queryTable(String statement, String item){
 		StringBuffer sb = new StringBuffer();
 		
 		try {
@@ -67,7 +66,7 @@ public class Database {
 		return sb.toString();
 	}
 	
-	public void closeDatabase() {
+	public static void closeDatabase() {
 		if (conn != null) {
 			try {
 				conn.close();
@@ -90,5 +89,33 @@ public class Database {
 		}
 		
 		return sb.toString();
+	}
+	
+	public static String qureyForTable(String name){
+		String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + name + "';";
+		StringBuffer sb = new StringBuffer();
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()){
+				if(sb.length() > 0){
+					sb.append(' ');
+				}
+				sb.append(rs.getString(name));
+			}
+		    stmt.close();
+		} catch (SQLException e) {
+			Log.loge("Execute statement: " + sql + " error!");
+			e.printStackTrace();
+			return null;
+		}
+		
+		return sb.toString();
+	}
+	
+	public static void dropTable(String name){
+		String sql = "DROP TABLE IF EXISTS " + name + " ;";
+		execSqlTable(sql);
 	}
 }

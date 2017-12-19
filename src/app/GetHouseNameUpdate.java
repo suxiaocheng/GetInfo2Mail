@@ -3,7 +3,6 @@ package app;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.List;
 
 import metadata.HouseProject;
 
@@ -13,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import tool.Database;
 import debug.Log;
 
 public class GetHouseNameUpdate implements Runnable {
@@ -20,7 +20,7 @@ public class GetHouseNameUpdate implements Runnable {
 	private static final int CONNECTION_TIMEOUT = 30000;
 	private static final boolean DEBUG = false;
 	public static boolean bNeedQuit = false;
-	public static boolean bComplete = false;	
+	public static boolean bComplete = false;
 	private final static String strProjectHead[] = { "项目名称", "开发商", "预售证",
 			"已售套数", "未售套数" };
 
@@ -35,16 +35,13 @@ public class GetHouseNameUpdate implements Runnable {
 	private static int iNumberThread = 0;
 
 	private static Object lock = null;
-	
-	private static HouseProject hp;
-	
+
 	public static ArrayList<String> alStringNewHouse;
 
 	static {
 		lock = new Object();
 		alStringNewHouse = new ArrayList<>();
-		hp = new HouseProject();
-		hp.execSqlTable(HouseProject.createTable());
+		Database.execSqlTable(HouseProject.createTable());
 	}
 
 	GetHouseNameUpdate(int page) {
@@ -95,17 +92,17 @@ public class GetHouseNameUpdate implements Runnable {
 					}
 					String strRefAddr = getElementRef(child.children());
 					/* Check if item is exist */
-					String strQuery = hp.queryTable(
+					String strQuery = Database.queryTable(
 							HouseProject.queryNameItem(child.text()), "NAME");
 					if ((strQuery != null) && (strQuery.length() > 0)) {
 						if (strQuery.compareTo(child.text()) == 0) {
 							Log.logi("Match item: " + child.text());
-						}else {
+						} else {
 							Log.loge("Never hit here");
 						}
 					} else {
-						hp.execSqlTable(HouseProject.insertItem(child.text(),
-								strRefAddr));
+						Database.execSqlTable(HouseProject.insertItem(
+								child.text(), strRefAddr));
 						alStringNewHouse.add(child.text());
 						iNewItemCount++;
 					}
@@ -157,7 +154,7 @@ public class GetHouseNameUpdate implements Runnable {
 					bFail = false;
 					sb.append(addr_area + "\n");
 				}
-			} 
+			}
 		}
 		if (iValidItem == 0) {
 			synchronized (lock) {
@@ -189,9 +186,6 @@ public class GetHouseNameUpdate implements Runnable {
 	}
 
 	public void run() {
-		List<String> listTmp;
-		String sql;
-
 		getAllHouseName();
 
 		synchronized (lock) {

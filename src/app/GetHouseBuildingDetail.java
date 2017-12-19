@@ -3,15 +3,16 @@ package app;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import metadata.HousePrice;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import tool.Database;
 import debug.Log;
-import metadata.HouseBuilding;
-import metadata.HousePrice;
 
 public class GetHouseBuildingDetail {
 	private static final String TAG = "GetHouseBuildingUpdate";
@@ -138,13 +139,12 @@ public class GetHouseBuildingDetail {
 	}
 
 	public boolean getOnePageFromInternet(String addr, String sql_table) {
-		StringBuffer sb;
 		Log.logd("Start to get data form->" + addr);
 		int iRetryCount = 0;
 		boolean bFail = false;
 
 		HousePrice.setTableName(sql_table);
-		hp.execSqlTable(HousePrice.createTable());
+		Database.execSqlTable(HousePrice.createTable());
 
 		while (bFail == false) {
 			Document doc = null;
@@ -162,13 +162,13 @@ public class GetHouseBuildingDetail {
 
 					for (HousePrice item : arrayHousePrice) {
 						/* query for exist */
-						String strQuery = hp.queryTable(HousePrice.queryNameItem(item.name), "name");
+						String strQuery = Database.queryTable(HousePrice.queryNameItem(item.name), "name");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(item.name) == 0) {
 								Log.loge("Adding detail, and found match item: " + item.name);
 							}
 						} else {
-							hp.execSqlTable(item.insertItem());
+							Database.execSqlTable(item.insertItem());
 							iItemValidCount++;
 						}
 					}
@@ -179,9 +179,14 @@ public class GetHouseBuildingDetail {
 				e.printStackTrace();
 				return false;
 			} catch (NumberFormatException e) {
-				Log.loge("Get Number format error, retry: " + iRetryCount);
+				Log.logd("Get Number format error, retry: " + iRetryCount);
+				
+				Database.dropTable(HousePrice.TableName);
+				Database.execSqlTable(HousePrice.createTable());
+				
 				if (iRetryCount++ > 5) {
 					bFail = true;
+					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
 				}
 			}
 		}

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import tool.Database;
 import tool.SendEmail;
 import debug.Log;
 
@@ -19,7 +20,6 @@ public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
 	private static final int CONNECTION_TIMEOUT = 30000;
 	private static final boolean DEBUG = false;
-	//private Database db = new Database();
 	private int iBuildingLevel;
 	private int iBuildingHeaderMatch;
 	private final static String strBuildingHead[] = { "楼栋名称", "栋号", "预售证号", "发证日期", "楼盘表", "备案" };
@@ -42,7 +42,7 @@ public class GetHouseBuildingUpdate {
 			bFail = true;
 
 			HouseBuilding.setTableName(item.strProjectName);
-			hb.execSqlTable(HouseBuilding.createTable());
+			Database.execSqlTable(HouseBuilding.createTable());
 			
 			while (bFail) {
 				Document doc = null;
@@ -55,6 +55,10 @@ public class GetHouseBuildingUpdate {
 					getElementBuilding(table);
 					bFail = false;
 				} catch (IOException e) {
+					// Remove current table
+					Database.dropTable(HouseBuilding.TableName);
+					Database.execSqlTable(HouseBuilding.createTable());
+					
 					// TODO Auto-generated catch block
 					iRetryCount++;
 					if (iRetryCount > 5) {
@@ -123,7 +127,7 @@ public class GetHouseBuildingUpdate {
 
 					if (iItemCount >= 5) {
 						/* Check if item is exist */
-						String strQuery = hb.queryTable(HouseBuilding.queryAddrItem(hb.strHtmlAddr), "addr");
+						String strQuery = Database.queryTable(HouseBuilding.queryAddrItem(hb.strHtmlAddr), "addr");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(hb.strHtmlAddr) == 0) {
 								Log.logi("Match item: " + hb.strBuildingName);
@@ -131,7 +135,7 @@ public class GetHouseBuildingUpdate {
 								Log.loge("Never hit here");
 							}
 						} else {
-							hb.execSqlTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
+							Database.execSqlTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
 							
 							/* Create building database here */
 							GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
