@@ -1,16 +1,14 @@
 package app;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-import metadata.HouseProject;
-import tool.Database;
 import tool.SendEmail;
 import debug.Log;
 
 public class GetInfo2Mail {
 	public static void main(String[] args) {
-		Log loger = new Log();
-
 		ArrayList<Thread> alThread = new ArrayList<>();
 
 		//if (Database.qureyForTable(HouseProject.TableName).compareTo(
@@ -49,7 +47,10 @@ public class GetInfo2Mail {
 				for (String item : GetHouseNameUpdate.alStringNewHouse) {
 					sb.append(item + "\n");
 				}
-				SendEmail sendEmail = new SendEmail("Project new found",
+				Date date = new Date();
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				String dateString = formatter.format(date);
+				SendEmail sendEmail = new SendEmail("New found-" + dateString,
 						sb.toString(), null);
 				Thread t1 = new Thread(sendEmail);
 				t1.start();

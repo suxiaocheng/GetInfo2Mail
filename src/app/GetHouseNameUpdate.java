@@ -163,7 +163,7 @@ public class GetHouseNameUpdate implements Runnable {
 		}
 
 		Log.logd("Adding " + addr_area + "->" + iNewItemCount
-				+ " item to database\n");
+				+ " item to database");
 	}
 
 	public static boolean getCompleteFlag() {
