@@ -18,8 +18,6 @@ import tool.SendEmail;
 
 public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
-	private static final int CONNECTION_TIMEOUT = 30000;
-	private static final boolean DEBUG = false;
 	private int iBuildingLevel;
 	private int iBuildingHeaderMatch;
 	private final static String strBuildingHead[] = { "楼栋名称", "栋号", "预售证号", "发证日期", "楼盘表", "备案" };

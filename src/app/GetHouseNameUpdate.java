@@ -18,8 +18,6 @@ import debug.Log;
 
 public class GetHouseNameUpdate implements Runnable {
 	private static final String TAG = "GetHouseNameUpdate";
-	private static final int CONNECTION_TIMEOUT = 30000;
-	private static final boolean DEBUG = false;
 	public static boolean bNeedQuit = false;
 	public static boolean bComplete = false;
 	private final static String strProjectHead[] = { "项目名称", "开发商", "预售证",
@@ -38,11 +36,17 @@ public class GetHouseNameUpdate implements Runnable {
 	private static Object lock = null;
 
 	public static ArrayList<String> alStringNewHouse;
+	public static String strFirstItem;
+	public static boolean bCheckForUpdate;
+	public static boolean bNeedUpdate;
 
 	static {
 		lock = new Object();
 		alStringNewHouse = new ArrayList<>();
 		Database.execSqlTable(HouseProject.createTable());
+		strFirstItem = null;
+		bCheckForUpdate = false;
+		bNeedUpdate = false;
 	}
 
 	GetHouseNameUpdate(int page) {
@@ -106,6 +110,20 @@ public class GetHouseNameUpdate implements Runnable {
 								child.text(), strRefAddr));
 						alStringNewHouse.add(child.text());
 						iNewItemCount++;
+
+					}
+
+					if (iValidItem == 0) {
+						if (strFirstItem == null) {
+							strFirstItem = child.text();
+						} else {
+							if (bCheckForUpdate == true) {
+								if (strFirstItem.compareTo(child.text()) != 0) {
+									strFirstItem = child.text();
+									bNeedUpdate = true;
+								}
+							}
+						}
 					}
 					iValidItem++;
 					iItemCount++;
@@ -117,6 +135,11 @@ public class GetHouseNameUpdate implements Runnable {
 			iProjectLevel--;
 		}
 		return true;
+	}
+
+	public static void initUpdateParam() {
+		bCheckForUpdate = true;
+		bNeedUpdate = false;
 	}
 
 	public void getAllHouseName() {
@@ -140,7 +163,8 @@ public class GetHouseNameUpdate implements Runnable {
 				bFail = false;
 			} catch (SocketTimeoutException e) {
 				// TODO Auto-generated catch block
-				Log.logd("addr: " + addr_area + " timeout " + iRetryCount + ", func: " + TAG);
+				Log.logd("addr: " + addr_area + " timeout " + iRetryCount
+						+ ", func: " + TAG);
 				iRetryCount++;
 				if (iRetryCount > AppConfig.RETRY_TIMES) {
 					e.printStackTrace();
@@ -148,7 +172,8 @@ public class GetHouseNameUpdate implements Runnable {
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				Log.logd("addr: " + addr_area + " IOException " + iRetryCount + ", func: " + TAG);
+				Log.logd("addr: " + addr_area + " IOException " + iRetryCount
+						+ ", func: " + TAG);
 				iRetryCount++;
 				if (iRetryCount > AppConfig.RETRY_TIMES) {
 					e.printStackTrace();

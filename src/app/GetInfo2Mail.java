@@ -4,16 +4,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import metadata.HouseProject;
+import tool.Database;
 import tool.SendEmail;
 import debug.Log;
 
 public class GetInfo2Mail {
 	public static void main(String[] args) {
 		ArrayList<Thread> alThread = new ArrayList<>();
+		String strQurey = Database.qureyForTable(HouseProject.TableName);
+		GetHouseBuildingUpdate buildUpdate = new GetHouseBuildingUpdate();
 
-		//if (Database.qureyForTable(HouseProject.TableName).compareTo(
-		//		HouseProject.TableName) == 0) {
-		{
+		if ((strQurey == null)
+				|| (strQurey.contains(HouseProject.TableName) == false)) {
 			for (int i = 1;; i++) {
 				if (GetHouseNameUpdate.getCompleteFlag() == false) {
 					GetHouseNameUpdate getHouseNameUpdate = new GetHouseNameUpdate(
@@ -48,7 +51,8 @@ public class GetInfo2Mail {
 					sb.append(item + "\n");
 				}
 				Date date = new Date();
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				SimpleDateFormat formatter = new SimpleDateFormat(
+						"yyyy-MM-dd HH:mm");
 				String dateString = formatter.format(date);
 				SendEmail sendEmail = new SendEmail("New found-" + dateString,
 						sb.toString(), null);
@@ -60,7 +64,6 @@ public class GetInfo2Mail {
 			/* Continue to get all the building */
 			GetHouseBuildingUpdate.bFirstBuild = true;
 
-			GetHouseBuildingUpdate buildUpdate = new GetHouseBuildingUpdate();
 			buildUpdate.getAllHouseBuilding();
 
 			GetHouseBuildingUpdate.bFirstBuild = false;
@@ -77,6 +80,7 @@ public class GetInfo2Mail {
 		}
 
 		while (true) {
+			GetHouseNameUpdate.initUpdateParam();
 			GetHouseNameUpdate.alStringNewHouse.clear();
 			GetHouseNameUpdate getHouseNameUpdate = new GetHouseNameUpdate(1);
 			Thread t1 = new Thread(getHouseNameUpdate);
@@ -88,14 +92,17 @@ public class GetInfo2Mail {
 				e1.printStackTrace();
 				break;
 			}
-			
+
+			if (GetHouseNameUpdate.bNeedUpdate) {
+				buildUpdate.getAllHouseBuilding();
+			}
+
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(60000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			break;
 		}
 
 		Log.logd("Program quit");

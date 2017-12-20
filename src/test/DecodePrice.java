@@ -17,8 +17,6 @@ import metadata.HousePrice;
 
 public class DecodePrice {
 	private static final String TAG = "TestHtmlParser";
-	private static final int CONNECTION_TIMEOUT = 30000;
-	private static final boolean DEBUG = false;
 	private static String strTestAddr = "http://data.fz0752.com/jygs/yszbuilding.shtml?code=0&bnum=201600009001&pnum=2016000090&view=2&type=&id=";
 
 	private static String strOutputDir = "Output";

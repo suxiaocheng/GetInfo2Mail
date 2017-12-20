@@ -102,7 +102,7 @@ public class Database {
 				if(sb.length() > 0){
 					sb.append(' ');
 				}
-				sb.append(rs.getString(name));
+				sb.append(rs.getString("name"));
 			}
 		    stmt.close();
 		} catch (SQLException e) {

@@ -16,8 +16,6 @@ import tool.Database;
 
 public class GetHouseBuildingDetail {
 	private static final String TAG = "GetHouseBuildingUpdate";
-	private static final boolean DEBUG = false;
-
 	private final static String strTableHeader[] = { "楼层", "房号", "建筑面积(㎡)", "备案均价(元/㎡)", "备案价(元/套)", "状态", "详情" };
 	private int iTableHeaderMatch;
 	private int iGetElementLevel;
