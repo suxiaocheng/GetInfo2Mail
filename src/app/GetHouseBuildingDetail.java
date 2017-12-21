@@ -3,20 +3,22 @@ package app;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import metadata.HousePrice;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import tool.Database;
 import config.AppConfig;
 import debug.Log;
-import metadata.HousePrice;
-import tool.Database;
 
 public class GetHouseBuildingDetail {
 	private static final String TAG = "GetHouseBuildingUpdate";
-	private final static String strTableHeader[] = { "楼层", "房号", "建筑面积(㎡)", "备案均价(元/㎡)", "备案价(元/套)", "状态", "详情" };
+	private final static String strTableHeader[] = { "楼层", "房号", "建筑面积(㎡)",
+			"备案均价(元/㎡)", "备案价(元/套)", "状态", "详情" };
 	private int iTableHeaderMatch;
 	private int iGetElementLevel;
 	private String strCurrentFloor;
@@ -26,6 +28,22 @@ public class GetHouseBuildingDetail {
 	private int iMaxRoom = 0;
 	private ArrayList<HousePrice> arrayHousePrice = new ArrayList<>();
 	public HousePrice hp = new HousePrice();
+
+	private String removeNumberException(String data) {
+		String ret = data;
+		int i;
+		if (data.contains("</td>") == true) {
+			for (i = 0; i < data.length(); i++) {
+				if (!Character.isDigit(data.charAt(i))
+						&& (data.charAt(i) != '.')) {
+					break;
+				}
+			}
+			ret = data.substring(0, i);
+			Log.logd("Change from " + data + " to " + ret);
+		}
+		return ret;
+	}
 
 	public boolean getElement(Elements parent) {
 		boolean leaf = false;
@@ -44,7 +62,8 @@ public class GetHouseBuildingDetail {
 			} else {
 				if (iTableHeaderMatch < strTableHeader.length) {
 					if (child.tag().toString().compareTo("th") == 0) {
-						if (child.text().compareTo(strTableHeader[iTableHeaderMatch]) == 0) {
+						if (child.text().compareTo(
+								strTableHeader[iTableHeaderMatch]) == 0) {
 							iTableHeaderMatch++;
 							if (iTableHeaderMatch >= strTableHeader.length) {
 								break;
@@ -58,7 +77,8 @@ public class GetHouseBuildingDetail {
 						Attributes atrChild = child.attributes();
 						if (atrChild != null) {
 							String strAttrClass = atrChild.get("rowspan");
-							if ((strAttrClass != null) && (strAttrClass.length() > 0)) {
+							if ((strAttrClass != null)
+									&& (strAttrClass.length() > 0)) {
 								try {
 									strCurrentFloor = child.text();
 									iCurrentRoomNumber = 1;
@@ -80,14 +100,18 @@ public class GetHouseBuildingDetail {
 								if (child.text().compareTo("") == 0) {
 									item.area = 0;
 								} else {
-									item.area = Float.parseFloat(child.text());
+									item.area = Float
+											.parseFloat(removeNumberException(child
+													.text()));
 								}
 								break;
 							case 2:
 								if (child.text().compareTo("") == 0) {
 									item.area_actual = 0;
 								} else {
-									item.area_actual = Float.parseFloat(child.text());
+									item.area_actual = Float
+											.parseFloat(removeNumberException(child
+													.text()));
 								}
 								break;
 							case 3:
@@ -97,19 +121,26 @@ public class GetHouseBuildingDetail {
 								if (child.text().compareTo("") == 0) {
 									item.price_per_square_meter = 0;
 								} else {
-									item.price_per_square_meter = (int) Float.parseFloat(child.text());
+									item.price_per_square_meter = (int) Float
+											.parseFloat(removeNumberException(child
+													.text()));
 								}
 								break;
 							case 6:
-								item.price_total = item.area * item.price_per_square_meter;
+								item.price_total = item.area
+										* item.price_per_square_meter;
 								break;
 							default:
 								break;
 							}
 						} catch (NumberFormatException e) {
-							Log.loge("\tiItemValidCount: " + iItemValidCount + ", text: " + child.text());
-							Log.loge("\tname: " + item.name + ", area: " + item.area + ", actual: " + item.area_actual);
-							Log.loge("\tper: " + item.price_per_square_meter + ", total: " + item.price_total);
+							Log.loge("\tiItemValidCount: " + iItemValidCount
+									+ ", text: " + child.text());
+							Log.loge("\tname: " + item.name + ", area: "
+									+ item.area + ", actual: "
+									+ item.area_actual);
+							Log.loge("\tper: " + item.price_per_square_meter
+									+ ", total: " + item.price_total);
 							throw new NumberFormatException();
 						}
 						iItemValidCount++;
@@ -118,7 +149,8 @@ public class GetHouseBuildingDetail {
 							/* End of parser */
 							item.floor = 0;
 							for (int i = 0; i < strCurrentFloor.length(); i++) {
-								if (Character.isDigit(strCurrentFloor.charAt(i)) == true) {
+								if (Character
+										.isDigit(strCurrentFloor.charAt(i)) == true) {
 									item.floor *= 10;
 									item.floor += strCurrentFloor.charAt(i) - '0';
 								} else {
@@ -134,8 +166,10 @@ public class GetHouseBuildingDetail {
 							}
 							arrayHousePrice.add(item);
 
-							sb.append(item.floor + "," + item.iRoomNum + "," + item.area + ","
-									+ item.price_per_square_meter + "," + item.price_total);
+							sb.append(item.floor + "," + item.iRoomNum + ","
+									+ item.area + ","
+									+ item.price_per_square_meter + ","
+									+ item.price_total);
 							break;
 						}
 						continue;
@@ -159,6 +193,7 @@ public class GetHouseBuildingDetail {
 		Log.logd("Start to get data form->" + addr);
 		int iRetryCount = 0;
 		boolean bFail = false;
+		boolean bRet = true;
 
 		HousePrice.setTableName(sql_table);
 		Database.execSqlTable(HousePrice.createTable());
@@ -179,14 +214,19 @@ public class GetHouseBuildingDetail {
 
 					for (HousePrice item : arrayHousePrice) {
 						/* query for exist */
-						String strQuery = Database.queryTable(HousePrice.queryNameItem(item.name), "name");
+						String strQuery = Database.queryTable(
+								HousePrice.queryNameItem(item.name), "name");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(item.name) == 0) {
-								Log.loge("Adding detail, and found match item: " + item.name);
+								Log.loge("Adding detail, and found match item: "
+										+ item.name);
 							}
 						} else {
-							Database.execSqlTable(item.insertItem());
-							iItemValidCount++;
+							/* Limit the valid item to valid price */
+							if (item.price_per_square_meter != 0) {
+								Database.execSqlTable(item.insertItem());
+								iItemValidCount++;
+							}
 						}
 					}
 				}
@@ -211,13 +251,23 @@ public class GetHouseBuildingDetail {
 				}
 
 				if (iRetryCount++ > AppConfig.RETRY_TIMES) {
+					iItemValidCount = 0;
 					bFail = true;
 					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
 				}
 			}
 		}
 
+		if (iItemValidCount == 0) {
+			bRet = false;
+			Database.dropTable(HousePrice.TableName);
+			Log.logi("Addr: " + addr + " has no valid item.");
+		} else {
+			Log.logd("Addr: " + addr + " has " + iItemValidCount
+					+ " valid item.");
+		}
+
 		Log.logd("Finish->" + addr);
-		return true;
+		return bRet;
 	}
 }

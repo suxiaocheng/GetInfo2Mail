@@ -20,7 +20,8 @@ public class GetHouseBuildingUpdate {
 	private static final String TAG = "GetHouseBuildingUpdate";
 	private int iBuildingLevel;
 	private int iBuildingHeaderMatch;
-	private final static String strBuildingHead[] = { "楼栋名称", "栋号", "预售证号", "发证日期", "楼盘表", "备案" };
+	private final static String strBuildingHead[] = { "楼栋名称", "栋号", "预售证号",
+			"发证日期", "楼盘表", "备案" };
 	private int iNewItemCount;
 	private int iValidItem;
 	private String strBuildingName;
@@ -31,17 +32,20 @@ public class GetHouseBuildingUpdate {
 		HouseProject prj = new HouseProject();
 		ArrayList<HouseProject> list = prj.decodeAllToArray();
 		boolean bFail;
+		boolean bRet = true;
 		int iRetryCount = 0;
 		StringBuffer sb = new StringBuffer();
 
 		for (HouseProject item : list) {
-			Log.logd("name: " + item.strProjectName + ", addr: " + item.strHtmlAddr);
+			Log.logd("name: " + item.strProjectName + ", addr: "
+					+ item.strHtmlAddr);
 			iRetryCount = 0;
 			bFail = true;
+			bRet = true;
 
 			HouseBuilding.setTableName(item.strProjectName);
 			Database.execSqlTable(HouseBuilding.createTable());
-			
+
 			while (bFail) {
 				Document doc = null;
 				strBuildingName = item.strProjectName;
@@ -50,13 +54,13 @@ public class GetHouseBuildingUpdate {
 					Elements table = doc.select("table");
 					iBuildingLevel = 0;
 					iValidItem = 0;
-					getElementBuilding(table);
+					bRet = getElementBuilding(table);
 					bFail = false;
 				} catch (IOException e) {
 					// Remove current table
 					Database.dropTable(HouseBuilding.TableName);
 					Database.execSqlTable(HouseBuilding.createTable());
-					
+
 					// TODO Auto-generated catch block
 					iRetryCount++;
 					if (iRetryCount > AppConfig.RETRY_TIMES) {
@@ -65,6 +69,9 @@ public class GetHouseBuildingUpdate {
 						sb.append(item.strHtmlAddr + "\n");
 					}
 				}
+			}
+			if (bRet == false) {
+				Database.dropTable(HouseBuilding.TableName);
 			}
 		}
 	}
@@ -84,6 +91,7 @@ public class GetHouseBuildingUpdate {
 
 	public boolean getElementBuilding(Elements parent) {
 		int iItemCount = 0;
+		boolean bRet;
 
 		if (parent == null) {
 			return false;
@@ -94,7 +102,8 @@ public class GetHouseBuildingUpdate {
 			}
 			if (iBuildingHeaderMatch < strBuildingHead.length) {
 				if (child.tag().toString().compareTo("th") == 0) {
-					if (child.text().compareTo(strBuildingHead[iBuildingHeaderMatch]) == 0) {
+					if (child.text().compareTo(
+							strBuildingHead[iBuildingHeaderMatch]) == 0) {
 						iBuildingHeaderMatch++;
 					} else {
 						break;
@@ -125,7 +134,9 @@ public class GetHouseBuildingUpdate {
 
 					if (iItemCount >= 5) {
 						/* Check if item is exist */
-						String strQuery = Database.queryTable(HouseBuilding.queryAddrItem(hb.strHtmlAddr), "addr");
+						String strQuery = Database.queryTable(
+								HouseBuilding.queryAddrItem(hb.strHtmlAddr),
+								"addr");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(hb.strHtmlAddr) == 0) {
 								Log.logi("Match item: " + hb.strBuildingName);
@@ -133,30 +144,36 @@ public class GetHouseBuildingUpdate {
 								Log.loge("Never hit here");
 							}
 						} else {
-							Database.execSqlTable(HouseBuilding.insertItem(hb.strBuildingName, hb.strHtmlAddr, hb.strDate));
-							
 							/* Create building database here */
 							GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
-							detail.getOnePageFromInternet(hb.strHtmlAddr, hb.strBuildingName);
-							
-							/* SendEmail to me */
-							if(bFirstBuild == false) {
-								SendEmail sendEmail = new SendEmail(hb.strBuildingName, detail.hp.decodeAllToString(), null);
-								Thread t1 = new Thread(sendEmail);
-								t1.start();
-								try {
-									t1.join();
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+							bRet = detail.getOnePageFromInternet(
+									hb.strHtmlAddr, hb.strBuildingName);
+
+							if (bRet == true) {
+								Database.execSqlTable(HouseBuilding.insertItem(
+										hb.strBuildingName, hb.strHtmlAddr,
+										hb.strDate));
+								/* SendEmail to me */
+								if (bFirstBuild == false) {
+									SendEmail sendEmail = new SendEmail(
+											hb.strBuildingName,
+											detail.hp.decodeAllToString(), null);
+									Thread t1 = new Thread(sendEmail);
+									t1.start();
+									try {
+										t1.join();
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 								}
+								iNewItemCount++;
 							}
-							
-							iNewItemCount++;
 						}
 						iValidItem++;
-						Log.logd("name: " + hb.strBuildingName + ", addr: " + hb.strHtmlAddr);						
-						
+						Log.logd("name: " + hb.strBuildingName + ", addr: "
+								+ hb.strHtmlAddr + ", count: " + iNewItemCount);
+
 						break;
 					}
 					iItemCount++;
@@ -166,6 +183,11 @@ public class GetHouseBuildingUpdate {
 			getElementBuilding(child.children());
 			iBuildingLevel--;
 		}
-		return true;
+		if (iNewItemCount > 0) {
+			bRet = true;
+		} else {
+			bRet = false;
+		}
+		return bRet;
 	}
 }
