@@ -1,6 +1,7 @@
 package app;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 import metadata.HousePrice;
@@ -41,6 +42,9 @@ public class GetHouseBuildingDetail {
 			}
 			ret = data.substring(0, i);
 			Log.logd("Change from " + data + " to " + ret);
+		}
+		if (ret.compareTo("") == 0) {
+			ret = "0";
 		}
 		return ret;
 	}
@@ -97,34 +101,22 @@ public class GetHouseBuildingDetail {
 								item.name = child.text();
 								break;
 							case 1:
-								if (child.text().compareTo("") == 0) {
-									item.area = 0;
-								} else {
-									item.area = Float
-											.parseFloat(removeNumberException(child
-													.text()));
-								}
+								item.area = Float
+										.parseFloat(removeNumberException(child
+												.text()));
 								break;
 							case 2:
-								if (child.text().compareTo("") == 0) {
-									item.area_actual = 0;
-								} else {
-									item.area_actual = Float
-											.parseFloat(removeNumberException(child
-													.text()));
-								}
+								item.area_actual = Float
+										.parseFloat(removeNumberException(child
+												.text()));
 								break;
 							case 3:
 							case 4:
 								break;
 							case 5:
-								if (child.text().compareTo("") == 0) {
-									item.price_per_square_meter = 0;
-								} else {
-									item.price_per_square_meter = (int) Float
-											.parseFloat(removeNumberException(child
-													.text()));
-								}
+								item.price_per_square_meter = (int) Float
+										.parseFloat(removeNumberException(child
+												.text()));
 								break;
 							case 6:
 								item.price_total = item.area
@@ -231,6 +223,23 @@ public class GetHouseBuildingDetail {
 					}
 				}
 				break;
+			} catch (SocketTimeoutException e) {
+				Log.logd("Timeout exception, retry: " + iRetryCount);
+
+				if (iRetryCount > 5) {
+					try {
+						Thread.sleep(iRetryCount * 100);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+
+				if (iRetryCount++ > AppConfig.RETRY_TIMES) {
+					iItemValidCount = 0;
+					bFail = true;
+					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -269,5 +278,13 @@ public class GetHouseBuildingDetail {
 
 		Log.logd("Finish->" + addr);
 		return bRet;
+	}
+
+	public static void main(String[] args) {
+		GetHouseBuildingDetail getHouseBuilding = new GetHouseBuildingDetail();
+		getHouseBuilding
+				.getOnePageFromInternet(
+						"http://data.fz0752.com/jygs/yszbuilding.shtml?code=0&bnum=201700009702&pnum=2017000097&view=2&type=&id=",
+						"tmp");
 	}
 }

@@ -46,14 +46,16 @@ public class GetInfo2Mail {
 				}
 			}
 			if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
+				int count = 0;
 				StringBuffer sb = new StringBuffer();
-				for (String item : GetHouseNameUpdate.alStringNewHouse) {
-					sb.append(item + "\n");
-				}
 				Date date = new Date();
 				SimpleDateFormat formatter = new SimpleDateFormat(
 						"yyyy-MM-dd HH:mm");
 				String dateString = formatter.format(date);
+				sb.append(dateString + "\n");
+				for (String item : GetHouseNameUpdate.alStringNewHouse) {
+					sb.append(count + ": " + item + "\n");
+				}
 				SendEmail sendEmail = new SendEmail("New found-" + dateString,
 						sb.toString(), null);
 				Thread t1 = new Thread(sendEmail);

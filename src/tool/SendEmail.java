@@ -15,6 +15,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import debug.Log;
+
 public class SendEmail implements Runnable {
 	String text;
 	String filename;
@@ -62,20 +64,20 @@ public class SendEmail implements Runnable {
 					mbp2.attachFile(filename);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					System.out.println("File attatch excepiton is happened");
+					Log.loge("File attatch excepiton is happened");
 					filename = null;
 					e.printStackTrace();
 				}
 			}
 
-			// create the Multipart and add its parts to it
+			// create the multi part and add its parts to it
 			Multipart mp = new MimeMultipart();
 			mp.addBodyPart(mbp1);
 			if (mbp2 != null) {
 				mp.addBodyPart(mbp2);
 			}
 
-			// add the Multipart to the message
+			// add the multi part to the message
 			msg.setContent(mp);
 
 			// set the Date: header
@@ -85,15 +87,17 @@ public class SendEmail implements Runnable {
 			// 连接邮件服务器
 			transport.connect("simulator_test", "simulator123");
 			// 发送邮件
-			transport.sendMessage(msg, new Address[] { new InternetAddress("suxiaocheng2010@hotmail.com") });
+			transport.sendMessage(msg, new Address[] {
+					new InternetAddress("suxiaocheng2010@hotmail.com"),
+					new InternetAddress("simulator_test@163.com") });
 			// 关闭连接
 			transport.close();
 
-			System.out.println("SendMail " + text + " successfully");
+			Log.logd("SendMail " + text + " successfully");
 
 		} catch (MessagingException e1) {
 			// TODO Auto-generated catch block
-			System.out.println("Exception is happened");
+			Log.loge("Exception is happened: " + e1.getMessage());
 			e1.printStackTrace();
 		}
 		System.out.println("SendMail thread is quit");
