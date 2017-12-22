@@ -46,7 +46,7 @@ public class GetInfo2Mail {
 				}
 			}
 			if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
-				int count = 0;
+				int count = 1;
 				StringBuffer sb = new StringBuffer();
 				Date date = new Date();
 				SimpleDateFormat formatter = new SimpleDateFormat(
@@ -54,7 +54,7 @@ public class GetInfo2Mail {
 				String dateString = formatter.format(date);
 				sb.append(dateString + "\n");
 				for (String item : GetHouseNameUpdate.alStringNewHouse) {
-					sb.append(count + ": " + item + "\n");
+					sb.append(count++ + ": " + item + "\n");
 				}
 				SendEmail sendEmail = new SendEmail("New found-" + dateString,
 						sb.toString(), null);
