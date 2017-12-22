@@ -1,18 +1,31 @@
 package tool;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.XZOutputStream;
+
+import app.GetHouseBuildingDetail;
 import debug.Log;
 
 public class Database {
 	private static String databaseName = "hz_house";
-	protected static Connection conn = null;	
+	protected static Connection conn = null;
 
-	static {		
+	private static final String strDBName = "hz_house.db";
+	private static final String strDBXZName = strDBName + ".xz";
+
+	static {
 		databaseName = "jdbc:sqlite:" + databaseName + ".db";
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -29,43 +42,43 @@ public class Database {
 		Log.logd("Database: " + databaseName + " load sucessfully!");
 	}
 
-	public static boolean execSqlTable(String statement){
+	public static boolean execSqlTable(String statement) {
 		boolean status = true;
-		
+
 		try {
 			Statement stmt = conn.createStatement();
 			stmt.executeUpdate(statement);
-		    stmt.close();
+			stmt.close();
 		} catch (SQLException e) {
 			Log.loge("Execute statement: " + statement + " error!");
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
-		
+
 		return status;
 	}
-	
-	public static String queryTable(String statement, String item){
+
+	public static String queryTable(String statement, String item) {
 		StringBuffer sb = new StringBuffer();
-		
+
 		try {
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(statement);
-			while(rs.next()){
-				if(sb.length() > 0){
+			while (rs.next()) {
+				if (sb.length() > 0) {
 					sb.append(' ');
 				}
 				sb.append(rs.getString(item));
 			}
-		    stmt.close();
+			stmt.close();
 		} catch (SQLException e) {
 			Log.loge("Execute statement: " + statement + " error!");
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return sb.toString();
 	}
-	
+
 	public static void closeDatabase() {
 		if (conn != null) {
 			try {
@@ -75,47 +88,90 @@ public class Database {
 			} catch (SQLException e) {
 				Log.loge("Close database fail!");
 				e.printStackTrace();
-			}			
+			}
 		}
 	}
-	
-	public static String createTableNameStr(String name){
+
+	public static String createTableNameStr(String name) {
 		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<name.length(); i++){
+		for (int i = 0; i < name.length(); i++) {
 			Byte b[] = new Byte[2];
 			b[0] = (byte) ((name.charAt(i) & 0xf) + '0');
-			b[1] = (byte) (((name.charAt(i)>>4) & 0xf) + '0');
+			b[1] = (byte) (((name.charAt(i) >> 4) & 0xf) + '0');
 			sb.append(b[0] + b[1]);
 		}
-		
+
 		return sb.toString();
 	}
-	
-	public static String qureyForTable(String name){
-		String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + name + "';";
+
+	public static String qureyForTable(String name) {
+		String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='"
+				+ name + "';";
 		StringBuffer sb = new StringBuffer();
-		
+
 		try {
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
-			while(rs.next()){
-				if(sb.length() > 0){
+			while (rs.next()) {
+				if (sb.length() > 0) {
 					sb.append(' ');
 				}
 				sb.append(rs.getString("name"));
 			}
-		    stmt.close();
+			stmt.close();
 		} catch (SQLException e) {
 			Log.loge("Execute statement: " + sql + " error!");
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return sb.toString();
 	}
-	
-	public static void dropTable(String name){
+
+	public static void dropTable(String name) {
 		String sql = "DROP TABLE IF EXISTS " + name + " ;";
 		execSqlTable(sql);
+	}
+
+	public static String compressDB() {
+		LZMA2Options options = new LZMA2Options();
+		FileOutputStream outfile;
+		Log.logd("Encoder memory usage: " + options.getEncoderMemoryUsage()
+				+ " KiB");
+		Log.logd("Decoder memory usage: " + options.getDecoderMemoryUsage()
+				+ " KiB");
+		try {
+			File fDBOut = new File(strDBXZName);
+			File fDBIn = new File(strDBName);
+			if (fDBOut.exists() == true) {
+				fDBOut.delete();
+			}
+			outfile = new FileOutputStream(strDBXZName);
+			XZOutputStream out = new XZOutputStream(outfile, options);
+			InputStream in = new FileInputStream(fDBIn);
+
+			byte[] buf = new byte[8192];
+			int size;
+			while ((size = in.read(buf, 0, buf.length)) != -1)
+				out.write(buf, 0, size);
+			out.finish();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			outfile = null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			outfile = null;
+		}
+
+		if (outfile == null) {
+			return strDBName;
+		}
+		return strDBXZName;
+	}
+	
+	public static void main(String[] args) {
+		compressDB();
 	}
 }

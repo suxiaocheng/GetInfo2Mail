@@ -1,10 +1,20 @@
 package app;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import metadata.HouseProject;
+
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.XZOutputStream;
+
 import tool.Database;
 import tool.SendEmail;
 import debug.Log;
@@ -45,23 +55,6 @@ public class GetInfo2Mail {
 					}
 				}
 			}
-			if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
-				int count = 1;
-				StringBuffer sb = new StringBuffer();
-				Date date = new Date();
-				SimpleDateFormat formatter = new SimpleDateFormat(
-						"yyyy-MM-dd HH:mm");
-				String dateString = formatter.format(date);
-				sb.append(dateString + "\n");
-				for (String item : GetHouseNameUpdate.alStringNewHouse) {
-					sb.append(count++ + ": " + item + "\n");
-				}
-				SendEmail sendEmail = new SendEmail("New found-" + dateString,
-						sb.toString(), null);
-				Thread t1 = new Thread(sendEmail);
-				t1.start();
-				alThread.add(t1);
-			}
 
 			/* Continue to get all the building */
 			GetHouseBuildingUpdate.bFirstBuild = true;
@@ -69,6 +62,25 @@ public class GetInfo2Mail {
 			buildUpdate.getAllHouseBuilding();
 
 			GetHouseBuildingUpdate.bFirstBuild = false;
+
+			if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
+				int count = 1;
+				StringBuffer sb = new StringBuffer();
+				Date date = new Date();
+				SimpleDateFormat formatter = new SimpleDateFormat(
+						"yyyy-MM-dd HH:mm");
+				String dateString = formatter.format(date);
+
+				sb.append(dateString + "\n");
+				for (String item : GetHouseNameUpdate.alStringNewHouse) {
+					sb.append(count++ + ": " + item + "\n");
+				}
+				SendEmail sendEmail = new SendEmail("New found-" + dateString,
+						sb.toString(), Database.compressDB());
+				Thread t1 = new Thread(sendEmail);
+				t1.start();
+				alThread.add(t1);
+			}
 
 			for (Thread t : alThread) {
 				try {

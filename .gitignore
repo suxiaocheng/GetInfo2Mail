@@ -21,3 +21,4 @@ output/
 #ignore the database
 *.db
 *.db-journal
+*.db.xz
