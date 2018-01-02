@@ -79,7 +79,7 @@ public class TestParser {
 	public static boolean getOnePageFromInternet(String addr) {
 		iValidItem = 0;
 
-		Log.logd("Start to get data form->" + addr);
+		Log.d("Start to get data form->" + addr);
 
 		Document doc = null;
 		try {
@@ -95,10 +95,10 @@ public class TestParser {
 		}
 
 		if (iValidItem == 0) {
-			Log.logd("Invalid->" + addr);
+			Log.d("Invalid->" + addr);
 			return false;
 		}
-		Log.logd("Finish->" + addr);
+		Log.d("Finish->" + addr);
 		return true;
 	}
 

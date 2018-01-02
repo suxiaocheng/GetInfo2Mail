@@ -101,9 +101,9 @@ public class GetHouseNameUpdate implements Runnable {
 							HouseProject.queryNameItem(child.text()), "NAME");
 					if ((strQuery != null) && (strQuery.length() > 0)) {
 						if (strQuery.compareTo(child.text()) == 0) {
-							Log.logi("Match item: " + child.text());
+							Log.i("Match item: " + child.text());
 						} else {
-							Log.loge("Never hit here");
+							Log.e("Never hit here");
 						}
 					} else {
 						Database.execSqlTable(HouseProject.insertItem(
@@ -149,7 +149,7 @@ public class GetHouseNameUpdate implements Runnable {
 		iNewItemCount = 0;
 
 		String addr_area = strAddr;
-		Log.logd("Get house name from->" + addr_area);
+		Log.d("Get house name from->" + addr_area);
 		iRetryCount = 0;
 		bFail = true;
 		while (bFail) {
@@ -163,7 +163,7 @@ public class GetHouseNameUpdate implements Runnable {
 				bFail = false;
 			} catch (SocketTimeoutException e) {
 				// TODO Auto-generated catch block
-				Log.logd("addr: " + addr_area + " timeout " + iRetryCount
+				Log.d("addr: " + addr_area + " timeout " + iRetryCount
 						+ ", func: " + TAG);
 				iRetryCount++;
 				if (iRetryCount > AppConfig.RETRY_TIMES) {
@@ -172,7 +172,7 @@ public class GetHouseNameUpdate implements Runnable {
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				Log.logd("addr: " + addr_area + " IOException " + iRetryCount
+				Log.d("addr: " + addr_area + " IOException " + iRetryCount
 						+ ", func: " + TAG);
 				iRetryCount++;
 				if (iRetryCount > AppConfig.RETRY_TIMES) {
@@ -187,7 +187,7 @@ public class GetHouseNameUpdate implements Runnable {
 			}
 		}
 
-		Log.logd("Adding " + addr_area + "->" + iNewItemCount
+		Log.d("Adding " + addr_area + "->" + iNewItemCount
 				+ " item to database");
 	}
 

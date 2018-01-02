@@ -13,9 +13,11 @@ public class HouseBuilding extends Database  {
 	public String strHtmlAddr;
 	public String strDate;
 	public String strChild;
+	public static String strProjectName;
 	public static String TableName;
 	
 	public static void setTableName(String name){
+		strProjectName = name;
 		TableName = "House" + createTableNameStr(name);
 	}
 	
@@ -71,7 +73,7 @@ public class HouseBuilding extends Database  {
 			}
 		    stmt.close();
 		} catch (SQLException e) {
-			Log.loge("Execute statement: " + statement + " error!");
+			Log.e("Execute statement: " + statement + " error!");
 			e.printStackTrace();
 			return null;
 		}

@@ -49,19 +49,19 @@ public class Log {
 		}
 	}
 
-	public static void logi(String msg) {
+	public static void i(String msg) {
 		log(3, msg);
 	}
 
-	public static void logd(String msg) {
+	public static void d(String msg) {
 		log(2, msg);
 	}
 
-	public static void logw(String msg) {
+	public static void w(String msg) {
 		log(1, msg);
 	}
 
-	public static void loge(String msg) {
+	public static void e(String msg) {
 		log(0, msg);
 	}
 
