@@ -28,6 +28,25 @@ public class TestParser {
 	private static String strOutputFile = "data";
 	private static File fOutputFile;
 	private static BufferedWriter bwOutputFile;
+	
+	private String removeNumberException(String data) {
+		String ret = data;
+		int i;
+		if (data.contains("</td>") == true) {
+			for (i = 0; i < data.length(); i++) {
+				if (!Character.isDigit(data.charAt(i))
+						&& ((data.charAt(i) != '.') || (data.charAt(i) != '-'))) {
+					break;
+				}
+			}
+			ret = data.substring(0, i);
+			Log.logd("Change from " + data + " to " + ret);
+		}
+		if (ret.compareTo("") == 0) {
+			ret = "0";
+		}
+		return ret;
+	}
 
 	public static boolean getElement(Elements parent) {
 		boolean leaf = false;
@@ -102,7 +121,7 @@ public class TestParser {
 		return true;
 	}
 
-	public static void test() {
+	public static void main(String[] args) {
 		for (int area = 0; area < strHouseArea.length; area++) {
 			/* Init output file */
 			fOutputFile = new File(strOutputFile+strHouseAreaName[area]+".csv");
