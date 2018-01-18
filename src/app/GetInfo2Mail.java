@@ -24,6 +24,7 @@ public class GetInfo2Mail {
 		ArrayList<Thread> alThread = new ArrayList<>();
 		String strQurey = Database.qureyForTable(HouseProject.TableName);
 		GetHouseBuildingUpdate buildUpdate = new GetHouseBuildingUpdate();
+		boolean bNeedFirstUpdateAll = true;
 
 		if ((strQurey == null)
 				|| (strQurey.contains(HouseProject.TableName) == false)) {
@@ -91,6 +92,7 @@ public class GetInfo2Mail {
 				}
 			}
 			alThread.clear();
+			bNeedFirstUpdateAll = false;
 		}
 
 		while (true) {
@@ -107,7 +109,8 @@ public class GetInfo2Mail {
 				break;
 			}
 
-			if (GetHouseNameUpdate.bNeedUpdate) {
+			if ((GetHouseNameUpdate.bNeedUpdate) || (bNeedFirstUpdateAll)) {
+				bNeedFirstUpdateAll = false;
 				buildUpdate.getAllHouseBuilding();
 			}
 
@@ -119,6 +122,6 @@ public class GetInfo2Mail {
 			}
 		}
 
-		Log.logd("Program quit");
+		Log.d("Program quit");
 	}
 }

@@ -41,7 +41,7 @@ public class GetHouseBuildingDetail {
 				}
 			}
 			ret = data.substring(0, i);
-			Log.logd("Change from " + data + " to " + ret);
+			Log.d("Change from " + data + " to " + ret);
 		}
 		if (ret.compareTo("") == 0) {
 			ret = "0";
@@ -88,7 +88,7 @@ public class GetHouseBuildingDetail {
 									iCurrentRoomNumber = 1;
 									continue;
 								} catch (NumberFormatException e) {
-									Log.loge(child.text() + " is not number");
+									Log.e(child.text() + " is not number");
 									break;
 								}
 							}
@@ -126,12 +126,12 @@ public class GetHouseBuildingDetail {
 								break;
 							}
 						} catch (NumberFormatException e) {
-							Log.loge("\tiItemValidCount: " + iItemValidCount
+							Log.e("\tiItemValidCount: " + iItemValidCount
 									+ ", text: " + child.text());
-							Log.loge("\tname: " + item.name + ", area: "
+							Log.e("\tname: " + item.name + ", area: "
 									+ item.area + ", actual: "
 									+ item.area_actual);
-							Log.loge("\tper: " + item.price_per_square_meter
+							Log.e("\tper: " + item.price_per_square_meter
 									+ ", total: " + item.price_total);
 							throw new NumberFormatException();
 						}
@@ -176,13 +176,13 @@ public class GetHouseBuildingDetail {
 			}
 		}
 		if (sb.length() != 0) {
-			Log.logi(sb.toString());
+			Log.i(sb.toString());
 		}
 		return true;
 	}
 
 	public boolean getOnePageFromInternet(String addr, String sql_table) {
-		Log.logd("Start to get data form->" + addr);
+		Log.d("Start to get data form->" + addr);
 		int iRetryCount = 0;
 		boolean bFail = false;
 		boolean bRet = true;
@@ -210,7 +210,7 @@ public class GetHouseBuildingDetail {
 								HousePrice.queryNameItem(item.name), "name");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(item.name) == 0) {
-								Log.loge("Adding detail, and found match item: "
+								Log.e("Adding detail, and found match item: "
 										+ item.name);
 							}
 						} else {
@@ -224,7 +224,7 @@ public class GetHouseBuildingDetail {
 				}
 				break;
 			} catch (SocketTimeoutException e) {
-				Log.logd("Timeout exception, retry: " + iRetryCount);
+				Log.d("Timeout exception, retry: " + iRetryCount);
 
 				if (iRetryCount > 5) {
 					try {
@@ -238,14 +238,14 @@ public class GetHouseBuildingDetail {
 				if (iRetryCount++ > AppConfig.RETRY_TIMES) {
 					iItemValidCount = 0;
 					bFail = true;
-					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
+					Log.e("Retry fail: " + iRetryCount + ", " + addr);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			} catch (NumberFormatException e) {
-				Log.logd("Get Number format error, retry: " + iRetryCount);
+				Log.d("Get Number format error, retry: " + iRetryCount);
 
 				Database.dropTable(HousePrice.TableName);
 				Database.execSqlTable(HousePrice.createTable());
@@ -262,7 +262,7 @@ public class GetHouseBuildingDetail {
 				if (iRetryCount++ > AppConfig.RETRY_TIMES) {
 					iItemValidCount = 0;
 					bFail = true;
-					Log.loge("Retry fail: " + iRetryCount + ", " + addr);
+					Log.e("Retry fail: " + iRetryCount + ", " + addr);
 				}
 			}
 		}
@@ -270,13 +270,13 @@ public class GetHouseBuildingDetail {
 		if (iItemValidCount == 0) {
 			bRet = false;
 			Database.dropTable(HousePrice.TableName);
-			Log.logi("Addr: " + addr + " has no valid item.");
+			Log.i("Addr: " + addr + " has no valid item.");
 		} else {
-			Log.logd("Addr: " + addr + " has " + iItemValidCount
+			Log.d("Addr: " + addr + " has " + iItemValidCount
 					+ " valid item.");
 		}
 
-		Log.logd("Finish->" + addr);
+		Log.d("Finish->" + addr);
 		return bRet;
 	}
 

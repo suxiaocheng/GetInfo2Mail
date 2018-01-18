@@ -31,15 +31,15 @@ public class Database {
 			Class.forName("org.sqlite.JDBC");
 			conn = (Connection) DriverManager.getConnection(databaseName);
 		} catch (SQLException e) {
-			Log.loge("Connection error!");
+			Log.e("Connection error!");
 			e.printStackTrace();
 			System.exit(-1);
 		} catch (ClassNotFoundException e) {
-			Log.loge("Class no found error!");
+			Log.e("Class no found error!");
 			e.printStackTrace();
 			System.exit(-2);
 		}
-		Log.logd("Database: " + databaseName + " load sucessfully!");
+		Log.d("Database: " + databaseName + " load sucessfully!");
 	}
 
 	public static boolean execSqlTable(String statement) {
@@ -50,7 +50,7 @@ public class Database {
 			stmt.executeUpdate(statement);
 			stmt.close();
 		} catch (SQLException e) {
-			Log.loge("Execute statement: " + statement + " error!");
+			Log.e("Execute statement: " + statement + " error!");
 			e.printStackTrace();
 		}
 
@@ -71,7 +71,7 @@ public class Database {
 			}
 			stmt.close();
 		} catch (SQLException e) {
-			Log.loge("Execute statement: " + statement + " error!");
+			Log.e("Execute statement: " + statement + " error!");
 			e.printStackTrace();
 			return null;
 		}
@@ -84,9 +84,9 @@ public class Database {
 			try {
 				conn.close();
 				conn = null;
-				Log.logd("Close database sucessfully!");
+				Log.d("Close database sucessfully!");
 			} catch (SQLException e) {
-				Log.loge("Close database fail!");
+				Log.e("Close database fail!");
 				e.printStackTrace();
 			}
 		}
@@ -120,7 +120,7 @@ public class Database {
 			}
 			stmt.close();
 		} catch (SQLException e) {
-			Log.loge("Execute statement: " + sql + " error!");
+			Log.e("Execute statement: " + sql + " error!");
 			e.printStackTrace();
 			return null;
 		}
@@ -136,9 +136,9 @@ public class Database {
 	public static String compressDB() {
 		LZMA2Options options = new LZMA2Options();
 		FileOutputStream outfile;
-		Log.logd("Encoder memory usage: " + options.getEncoderMemoryUsage()
+		Log.d("Encoder memory usage: " + options.getEncoderMemoryUsage()
 				+ " KiB");
-		Log.logd("Decoder memory usage: " + options.getDecoderMemoryUsage()
+		Log.d("Decoder memory usage: " + options.getDecoderMemoryUsage()
 				+ " KiB");
 		try {
 			File fDBOut = new File(strDBXZName);

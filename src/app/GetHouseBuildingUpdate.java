@@ -37,7 +37,7 @@ public class GetHouseBuildingUpdate {
 		StringBuffer sb = new StringBuffer();
 
 		for (HouseProject item : list) {
-			Log.logd("name: " + item.strProjectName + ", addr: "
+			Log.d("name: " + item.strProjectName + ", addr: "
 					+ item.strHtmlAddr);
 			iRetryCount = 0;
 			bFail = true;
@@ -128,7 +128,7 @@ public class GetHouseBuildingUpdate {
 						hb.strHtmlAddr = getElementRef(child.children());
 						break;
 					default:
-						Log.logd("iItemCount exceed max value: " + iItemCount);
+						Log.d("iItemCount exceed max value: " + iItemCount);
 						break;
 					}
 
@@ -139,15 +139,15 @@ public class GetHouseBuildingUpdate {
 								"addr");
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(hb.strHtmlAddr) == 0) {
-								Log.logi("Match item: " + hb.strBuildingName);
+								Log.i("Match item: " + hb.strBuildingName);
 							} else {
-								Log.loge("Never hit here");
+								Log.e("Never hit here");
 							}
 						} else {
 							/* Create building database here */
 							GetHouseBuildingDetail detail = new GetHouseBuildingDetail();
 							bRet = detail.getOnePageFromInternet(
-									hb.strHtmlAddr, hb.strBuildingName);
+									hb.strHtmlAddr, HouseBuilding.strProjectName + "00" + hb.strBuildingName);
 
 							if (bRet == true) {
 								Database.execSqlTable(HouseBuilding.insertItem(
@@ -156,7 +156,8 @@ public class GetHouseBuildingUpdate {
 								/* SendEmail to me */
 								if (bFirstBuild == false) {
 									SendEmail sendEmail = new SendEmail(
-											hb.strBuildingName,
+											HouseBuilding.strProjectName + ":"
+													+ hb.strBuildingName,
 											detail.hp.decodeAllToString(), null);
 									Thread t1 = new Thread(sendEmail);
 									t1.start();
@@ -171,7 +172,7 @@ public class GetHouseBuildingUpdate {
 							}
 						}
 						iValidItem++;
-						Log.logd("name: " + hb.strBuildingName + ", addr: "
+						Log.d("name: " + hb.strBuildingName + ", addr: "
 								+ hb.strHtmlAddr + ", count: " + iNewItemCount);
 
 						break;

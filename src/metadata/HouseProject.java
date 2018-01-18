@@ -58,7 +58,7 @@ public class HouseProject extends Database {
 			}
 		    stmt.close();
 		} catch (SQLException e) {
-			Log.loge("Execute statement: " + statement + " error!");
+			Log.e("Execute statement: " + statement + " error!");
 			e.printStackTrace();
 			return null;
 		}

@@ -152,7 +152,7 @@ public class DecodePrice {
 
 	public static boolean getOnePageFromInternet(String addr) {
 		StringBuffer sb;
-		Log.logd("Start to get data form->" + addr);
+		Log.d("Start to get data form->" + addr);
 
 		Document doc = null;
 		try {
@@ -204,7 +204,7 @@ public class DecodePrice {
 			return false;
 		}
 
-		Log.logd("Finish->" + addr);
+		Log.d("Finish->" + addr);
 		return true;
 	}
 

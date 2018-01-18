@@ -64,7 +64,7 @@ public class SendEmail implements Runnable {
 					mbp2.attachFile(filename);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					Log.loge("File attatch excepiton is happened");
+					Log.e("File attatch excepiton is happened");
 					filename = null;
 					e.printStackTrace();
 				}
@@ -93,11 +93,11 @@ public class SendEmail implements Runnable {
 			// πÿ±’¡¨Ω”
 			transport.close();
 
-			Log.logd("SendMail " + text + " successfully");
+			Log.d("SendMail " + text + " successfully");
 
 		} catch (MessagingException e1) {
 			// TODO Auto-generated catch block
-			Log.loge("Exception is happened: " + e1.getMessage());
+			Log.e("Exception is happened: " + e1.getMessage());
 			e1.printStackTrace();
 		}
 		System.out.println("SendMail thread is quit");
