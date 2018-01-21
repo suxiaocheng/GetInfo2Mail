@@ -39,7 +39,7 @@ public class GetHouseNameUpdate implements Runnable {
 	public static String strFirstItem;
 	public static boolean bCheckForUpdate;
 	public static boolean bNeedUpdate;
-
+	
 	static {
 		lock = new Object();
 		alStringNewHouse = new ArrayList<>();
@@ -145,6 +145,7 @@ public class GetHouseNameUpdate implements Runnable {
 	public void getAllHouseName() {
 		int iRetryCount = 0;
 		boolean bFail;
+		int iTimeout = 30000;
 
 		iNewItemCount = 0;
 
@@ -155,7 +156,7 @@ public class GetHouseNameUpdate implements Runnable {
 		while (bFail) {
 			Document doc = null;
 			try {
-				doc = Jsoup.connect(addr_area).get();
+				doc = Jsoup.connect(addr_area).timeout(iTimeout).get();
 				Elements table = doc.select("table");
 				iProjectLevel = 0;
 				iValidItem = 0;
@@ -166,6 +167,7 @@ public class GetHouseNameUpdate implements Runnable {
 				Log.d("addr: " + addr_area + " timeout " + iRetryCount
 						+ ", func: " + TAG);
 				iRetryCount++;
+				iTimeout = 120000;
 				if (iRetryCount > AppConfig.RETRY_TIMES) {
 					e.printStackTrace();
 					bFail = false;

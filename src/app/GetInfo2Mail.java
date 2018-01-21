@@ -1,23 +1,13 @@
 package app;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import debug.Log;
 import metadata.HouseProject;
-
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.XZOutputStream;
-
 import tool.Database;
 import tool.SendEmail;
-import debug.Log;
 
 public class GetInfo2Mail {
 	public static void main(String[] args) {

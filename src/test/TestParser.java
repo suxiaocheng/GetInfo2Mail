@@ -40,7 +40,7 @@ public class TestParser {
 				}
 			}
 			ret = data.substring(0, i);
-			Log.logd("Change from " + data + " to " + ret);
+			Log.d("Change from " + data + " to " + ret);
 		}
 		if (ret.compareTo("") == 0) {
 			ret = "0";

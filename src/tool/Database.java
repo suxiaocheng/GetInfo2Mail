@@ -16,6 +16,7 @@ import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZOutputStream;
 
 import app.GetHouseBuildingDetail;
+import config.AppConfig;
 import debug.Log;
 
 public class Database {
@@ -26,7 +27,17 @@ public class Database {
 	private static final String strDBXZName = strDBName + ".xz";
 
 	static {
-		databaseName = "jdbc:sqlite:" + databaseName + ".db";
+		/* Check for dir */
+		File fDir = new File(AppConfig.WORKING_DIR);
+		if (fDir.exists() == true) {
+			if (fDir.isDirectory() == false) {
+				fDir.delete();
+			}
+		} else {
+			fDir.mkdirs();
+		}
+		
+		databaseName = "jdbc:sqlite:" + AppConfig.WORKING_DIR + databaseName + ".db";
 		try {
 			Class.forName("org.sqlite.JDBC");
 			conn = (Connection) DriverManager.getConnection(databaseName);
@@ -105,8 +116,7 @@ public class Database {
 	}
 
 	public static String qureyForTable(String name) {
-		String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='"
-				+ name + "';";
+		String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + name + "';";
 		StringBuffer sb = new StringBuffer();
 
 		try {
@@ -136,17 +146,15 @@ public class Database {
 	public static String compressDB() {
 		LZMA2Options options = new LZMA2Options();
 		FileOutputStream outfile;
-		Log.d("Encoder memory usage: " + options.getEncoderMemoryUsage()
-				+ " KiB");
-		Log.d("Decoder memory usage: " + options.getDecoderMemoryUsage()
-				+ " KiB");
+		Log.d("Encoder memory usage: " + options.getEncoderMemoryUsage() + " KiB");
+		Log.d("Decoder memory usage: " + options.getDecoderMemoryUsage() + " KiB");
 		try {
-			File fDBOut = new File(strDBXZName);
-			File fDBIn = new File(strDBName);
+			File fDBOut = new File(AppConfig.WORKING_DIR + strDBXZName);
+			File fDBIn = new File(AppConfig.WORKING_DIR + strDBName);
 			if (fDBOut.exists() == true) {
 				fDBOut.delete();
 			}
-			outfile = new FileOutputStream(strDBXZName);
+			outfile = new FileOutputStream(AppConfig.WORKING_DIR + strDBXZName);
 			XZOutputStream out = new XZOutputStream(outfile, options);
 			InputStream in = new FileInputStream(fDBIn);
 
@@ -170,7 +178,7 @@ public class Database {
 		}
 		return strDBXZName;
 	}
-	
+
 	public static void main(String[] args) {
 		compressDB();
 	}
