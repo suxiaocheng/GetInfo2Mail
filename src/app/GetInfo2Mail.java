@@ -102,6 +102,36 @@ public class GetInfo2Mail {
 			if ((GetHouseNameUpdate.bNeedUpdate) || (bNeedFirstUpdateAll)) {
 				bNeedFirstUpdateAll = false;
 				buildUpdate.getAllHouseBuilding();
+				
+				/* If database has been update, send it to backup */
+				if (GetHouseNameUpdate.alStringNewHouse.isEmpty() == false) {
+					int count = 1;
+					StringBuffer sb = new StringBuffer();
+					Date date = new Date();
+					SimpleDateFormat formatter = new SimpleDateFormat(
+							"yyyy-MM-dd HH:mm");
+					String dateString = formatter.format(date);
+
+					sb.append(dateString + "\n");
+					for (String item : GetHouseNameUpdate.alStringNewHouse) {
+						sb.append(count++ + ": " + item + "\n");
+					}
+					SendEmail sendEmail = new SendEmail("New found-" + dateString,
+							sb.toString(), Database.compressDB());
+					Thread t1 = new Thread(sendEmail);
+					t1.start();
+					alThread.add(t1);
+				}
+
+				for (Thread t : alThread) {
+					try {
+						t.join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				alThread.clear();
 			}
 
 			try {

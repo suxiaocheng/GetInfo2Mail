@@ -174,9 +174,9 @@ public class Database {
 		}
 
 		if (outfile == null) {
-			return strDBName;
+			return AppConfig.WORKING_DIR + strDBName;
 		}
-		return strDBXZName;
+		return AppConfig.WORKING_DIR + strDBXZName;
 	}
 
 	public static void main(String[] args) {
