@@ -118,9 +118,9 @@ public class GetInfo2Mail {
 					}
 					SendEmail sendEmail = new SendEmail("New found-" + dateString,
 							sb.toString(), Database.compressDB());
-					Thread t1 = new Thread(sendEmail);
-					t1.start();
-					alThread.add(t1);
+					Thread t2 = new Thread(sendEmail);
+					t2.start();
+					alThread.add(t2);
 				}
 
 				for (Thread t : alThread) {
