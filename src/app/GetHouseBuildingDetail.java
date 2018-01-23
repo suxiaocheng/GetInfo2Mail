@@ -186,6 +186,7 @@ public class GetHouseBuildingDetail {
 		int iRetryCount = 0;
 		boolean bFail = false;
 		boolean bRet = true;
+		int iTimeout = 30000;
 
 		HousePrice.setTableName(sql_table);
 		Database.execSqlTable(HousePrice.createTable());
@@ -193,7 +194,7 @@ public class GetHouseBuildingDetail {
 		while (bFail == false) {
 			Document doc = null;
 			try {
-				doc = Jsoup.connect(addr).get();
+				doc = Jsoup.connect(addr).timeout(iTimeout).get();
 				if (doc != null) {
 					Elements table = doc.select("table");
 					iGetElementLevel = 0;
@@ -226,6 +227,7 @@ public class GetHouseBuildingDetail {
 			} catch (SocketTimeoutException e) {
 				Log.d("Timeout exception, retry: " + iRetryCount);
 
+				iTimeout = 120000;
 				if (iRetryCount > 5) {
 					try {
 						Thread.sleep(iRetryCount * 100);

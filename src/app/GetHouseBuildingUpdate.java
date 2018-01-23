@@ -23,6 +23,7 @@ public class GetHouseBuildingUpdate {
 	private final static String strBuildingHead[] = { "楼栋名称", "栋号", "预售证号",
 			"发证日期", "楼盘表", "备案" };
 	private int iNewItemCount;
+	private int iOldItemCount;
 	private int iValidItem;
 	private String strBuildingName;
 	private HouseBuilding hb = new HouseBuilding();
@@ -35,6 +36,7 @@ public class GetHouseBuildingUpdate {
 		boolean bRet = true;
 		int iRetryCount = 0;
 		StringBuffer sb = new StringBuffer();
+		int iTimeout = 30000;
 
 		for (HouseProject item : list) {
 			Log.d("name: " + item.strProjectName + ", addr: "
@@ -50,9 +52,11 @@ public class GetHouseBuildingUpdate {
 				Document doc = null;
 				strBuildingName = item.strProjectName;
 				try {
-					doc = Jsoup.connect(item.strHtmlAddr).get();
+					doc = Jsoup.connect(item.strHtmlAddr).timeout(iTimeout).get();
 					Elements table = doc.select("table");
 					iBuildingLevel = 0;
+					iNewItemCount = 0;
+					iOldItemCount = 0;
 					iValidItem = 0;
 					bRet = getElementBuilding(table);
 					bFail = false;
@@ -63,6 +67,7 @@ public class GetHouseBuildingUpdate {
 
 					// TODO Auto-generated catch block
 					iRetryCount++;
+					iTimeout = 120000;
 					if (iRetryCount > AppConfig.RETRY_TIMES) {
 						e.printStackTrace();
 						bFail = false;
@@ -140,6 +145,7 @@ public class GetHouseBuildingUpdate {
 						if ((strQuery != null) && (strQuery.length() > 0)) {
 							if (strQuery.compareTo(hb.strHtmlAddr) == 0) {
 								Log.i("Match item: " + hb.strBuildingName);
+								iOldItemCount++;
 							} else {
 								Log.e("Never hit here");
 							}
@@ -184,7 +190,7 @@ public class GetHouseBuildingUpdate {
 			getElementBuilding(child.children());
 			iBuildingLevel--;
 		}
-		if (iNewItemCount > 0) {
+		if ((iNewItemCount + iOldItemCount) > 0) {
 			bRet = true;
 		} else {
 			bRet = false;
