@@ -1,5 +1,6 @@
 package tool;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
@@ -30,6 +31,7 @@ public class SendEmail implements Runnable {
 	}
 
 	public void run() {
+		File attactment = null;
 		Properties props = new Properties();
 		// 开启debug调试
 		props.setProperty("mail.debug", "false");
@@ -42,6 +44,7 @@ public class SendEmail implements Runnable {
 
 		// 设置环境信息
 		Session session = Session.getInstance(props);
+		session.setDebug(false);
 
 		// 创建邮件对象
 		Message msg = new MimeMessage(session);
@@ -56,17 +59,20 @@ public class SendEmail implements Runnable {
 
 			MimeBodyPart mbp2 = null;
 			if (filename != null) {
-				// create the second message part
-				mbp2 = new MimeBodyPart();
+				attactment = new File(filename);
+				if(attactment.exists() == true){
+					// create the second message part
+					mbp2 = new MimeBodyPart();
 
-				// attach the file to the message
-				try {
-					mbp2.attachFile(filename);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					Log.e("File attatch excepiton is happened");
-					filename = null;
-					e.printStackTrace();
+					// attach the file to the message
+					try {
+						mbp2.attachFile(attactment);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						Log.e("File attatch excepiton is happened");
+						filename = null;
+						e.printStackTrace();
+					}
 				}
 			}
 
@@ -100,6 +106,6 @@ public class SendEmail implements Runnable {
 			Log.e("Exception is happened: " + e1.getMessage());
 			e1.printStackTrace();
 		}
-		System.out.println("SendMail thread is quit");
+		Log.d("SendMail thread is quit");
 	}
 }
